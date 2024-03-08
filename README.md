@@ -18,7 +18,7 @@ Output formats supported are:
 
 ## Command Line Options
 
-sqlclient [options]
+**sqlclient [options]**
 
     -c,--config <arg>           specify database configuration file
     -d,--database <arg>         specify database name
@@ -56,7 +56,7 @@ Directives supported are:
 
 ## Examples
 
-#### File myinput.sql:
+**File item-extract.sql:**
 
     .format json
     .output ../extract/items.json
