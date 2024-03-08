@@ -303,7 +303,6 @@ class Connection {
 
     void processSQL(String sql) {
 
-        //noinspection GroovyUnusedAssignment
         List data = []
         List cols = []
         List colw = []
@@ -354,14 +353,14 @@ class Connection {
         }
     }
 
-    String processUserInput() {
+    void processUserInput() {
         // handle sql command line input
         processSQL(m_sqlStatement)
         m_sqlStatement = ""
         if (m_fileOut != "/dev/stdout") displayOutput(1, "output: $m_fileOut")
     }
 
-    String processFileInput() {
+    void processFileInput() {
         // handle file input
 
         if (m_fileIn != "/dev/stdin" && ! new File(m_fileIn).exists()) {
