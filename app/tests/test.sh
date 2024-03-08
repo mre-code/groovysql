@@ -67,7 +67,7 @@ VERBOSE=0
 PROJECTBASE=$HOME/dox/repos/sqlclient
 GROOVYBASE=$PROJECTBASE/app/src/main/groovy
 TESTBASE=$PROJECTBASE/app/tests
-WANTJAR=0
+RUNFORMAT=groovy
 
 cd $PROJECTBASE || exit
 
@@ -75,35 +75,43 @@ cd $GROOVYBASE || exit
 
 usage() { pod2usage -verbose 0 $MYNAME ; exit 1 ; }
 
-while getopts :jFCST:hO:v: OPT
+while getopts :r:FCST:hO:v: OPT
 do
 	case "$OPT" in
 	F)	ACTION=run_file_tests ;;
 	C)	ACTION=run_cmdline_test ;;
 	S)	ACTION=run_stdio_test ;;
 	T)	ACTION=run_connection_test ; FREQUENCY=$OPTARG ;;
-	j)	WANTJAR=1 ;;
+	r)	RUNFORMAT=$OPTARG ;;
 	O)	OPTIONS+=" --$OPTARG" ;;
 	v)	VERBOSE=$OPTARG ;;
-	h)  pod2usage -verbose 2 $MYNAME ; exit 0 ;;
-	:)  echo "$MYNAME: Option $OPTARG requires a value" >&2; exit 2 ;;
-	*)  usage;;
+	h)	pod2usage -verbose 2 $MYNAME ; exit 0 ;;
+	:)	echo "$MYNAME: Option $OPTARG requires a value" >&2; exit 2 ;;
+	*)	usage;;
 	esac
 done
 shift $(( OPTIND - 1 ))
 
-if [[ $WANTJAR == 1 ]]
-then
-	EXEC="java -jar"
-	SQLCLIENT=$PROJECTBASE/app/build/libs/app-all.jar
-else
+case $RUNFORMAT in
+sqlclient)
+	EXEC=""
+       	SQLCLIENT=sqlclient 
+       	type $SQLCLIENT
+	;;
+jar)
+	EXEC="java -jar" 
+       	SQLCLIENT=$PROJECTBASE/app/build/libs/app-all.jar
+	;;
+groovy)
 	EXEC="groovy"
 	SQLCLIENT=com/brokenmember/database/SqlClient.groovy
-
 	export CLASSPATH
-	CLASSPATH+=:/app/d7/tools/client-drivers/jdbc/denodo-vdp-jdbcdriver.jar
+	CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc-3.6.28.jar
+	CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
 	CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
-fi
+	;;
+esac
+
 
 case $ACTION in
 	*file*)

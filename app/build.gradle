@@ -17,7 +17,7 @@ plugins {
 repositories {
     mavenCentral()
     flatDir {
-        dirs '/app/d7/tools/client-drivers/jdbc'
+        dirs '/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x', '/app/d7/lib/extensions/jdbc-drivers/vdp-7.0'
     }
 }
 
@@ -27,7 +27,9 @@ dependencies {
     implementation 'org.apache.groovy:groovy-cli-commons:4.0.19'
     implementation 'org.apache.groovy:groovy-toml:4.0.19'
     implementation 'org.apache.commons:commons-csv:1.10.0'
+    implementation name: 'snowflake-jdbc-3.6.28'
     implementation name: 'denodo-vdp-jdbcdriver'
+
 
     // used by gradle (only) to integrate with maven
     implementation libs.guava

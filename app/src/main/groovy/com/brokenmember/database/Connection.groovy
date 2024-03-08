@@ -21,9 +21,6 @@ class Connection {
     String m_dbClass
     String m_dbScheme
 
-    Integer m_iterations
-    Integer m_interval
-
     Boolean m_timestamps
 
     String m_fileIn
@@ -75,10 +72,15 @@ class Connection {
         m_fileOut = (options.fileout ?: "/dev/stdout")
         m_overwrite = options.overwrite
 
-        m_verbose = options.verbose
-
         m_format = (options.format ?: "text").toLowerCase()
         m_width = (options.width ?: 30)
+
+        m_verbose = options.verbose
+
+        if (m_verbose >= 3) {
+            Sql.LOG.level = java.util.logging.Level.FINE
+            Logger.getLogger('groovy.sql').level = Level.FINE
+        }
 
         if (m_dbConfigFile) {
             m_dbConfig = new TomlSlurper().parse(new File(m_dbConfigFile))
