@@ -1,0 +1,5 @@
+.format csv
+.overwrite true
+.output ../tests/results-directives.csv
+.test for unrecognized directive
+select * from item limit 3;

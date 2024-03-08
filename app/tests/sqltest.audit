@@ -1,0 +1,15 @@
+select
+	  100				-- unnamed integer field
+	, 200 as "named field 1"	-- field name longer than field width
+	, audit_dt as "audit date"	-- date/time field with named field with space
+	, audit_reason			-- standard varchar field
+	, item_id			-- short varchar field (6)
+	, price				-- double
+
+from
+	txn_audit
+join
+	txn
+on
+	txn.txn_id = txn_audit.txn_id
+;

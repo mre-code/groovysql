@@ -1,0 +1,1 @@
+select now(), 'text' as field2, 123 as field3;
