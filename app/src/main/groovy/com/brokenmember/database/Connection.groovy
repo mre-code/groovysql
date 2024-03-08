@@ -303,6 +303,7 @@ class Connection {
 
     void processSQL(String sql) {
 
+        //noinspection GroovyUnusedAssignment
         List data = []
         List cols = []
         List colw = []

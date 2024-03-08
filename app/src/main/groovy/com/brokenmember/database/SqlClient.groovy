@@ -36,6 +36,10 @@ class SqlClient {
             return
         }
 
+        if (opt.arguments()) {
+            System.err.println "ERROR - unrecognized input: ${opt.arguments()}"
+        }
+
         if (opt.fileout && new File(opt.fileout).exists()) {
             if (!opt.overwrite) {
                 System.err.println "ERROR - file $opt.fileout already exists"
@@ -60,9 +64,5 @@ class SqlClient {
         }
 
         connection.closeConnection()
-
-        if (opt.arguments()) {
-            System.err.println "ERROR - unrecognized input: ${opt.arguments()}"
-        }
     }
 }
