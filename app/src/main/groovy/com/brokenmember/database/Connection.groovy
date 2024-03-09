@@ -124,7 +124,7 @@ class Connection {
                 driver  : m_dbClass
         ]
 
-        if (! options.testconnection) {
+        if (! options.testconnect) {
             displayOutput(1, "opening connection to ${m_dbUrl}")
 
             m_dbOptions.tokenize('?&').each {
@@ -391,7 +391,6 @@ class Connection {
 
     void processFileInput() {
         // handle file input
-
         if (m_fileIn != "/dev/stdin" && ! new File(m_fileIn).exists()) {
             errorExit("input file not found: $m_fileIn")
         }
@@ -416,6 +415,7 @@ class Connection {
                 }
             }
         }
+
         if (m_fileOut != "/dev/stdout") displayOutput(1, "output: $m_fileOut")
         if (m_sqlStatement != "") errorExit("discarding unterminated SQL = $m_sqlStatement")
         closeConnection()
