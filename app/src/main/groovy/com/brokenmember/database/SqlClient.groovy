@@ -62,7 +62,5 @@ class SqlClient {
         } else {
             connection.processFileInput()
         }
-
-        connection.closeConnection()
     }
 }

@@ -9,6 +9,7 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 
 import java.sql.SQLException
+// import groovy.util.logging.Log
 
 class Connection {
 
@@ -20,6 +21,8 @@ class Connection {
     String m_dbName
     String m_dbClass
     String m_dbScheme
+    String m_dbUrl
+    String m_dbOptions
 
     Boolean m_timestamps
 
@@ -43,14 +46,14 @@ class Connection {
         return new Date().format("yyyy-MM-dd HH:mm:ss")
     }
 
-    void displayOutput(level, msg) {
+    void displayOutput(Integer level, msg) {
         if (Math.abs(m_verbose) >= level) {
             if (m_timestamps) print "${timestamp()} :: "
             println msg
         }
     }
 
-    void errorExit(msg) {
+    void errorExit(String msg) {
         if (m_timestamps) print "${timestamp()} :: "
         println ">>> ERROR: $msg"
         System.exit(1)
@@ -77,10 +80,10 @@ class Connection {
 
         m_verbose = options.verbose
 
-        if (m_verbose >= 3) {
-            Sql.LOG.level = java.util.logging.Level.FINE
-            Logger.getLogger('groovy.sql').level = Level.FINE
-        }
+//        if (m_verbose >= 3) {
+//            Sql.LOG.level = java.util.logging.Level.FINE
+//            Logger.getLogger('groovy.sql').level = Level.FINE
+//        }
 
         if (m_dbConfigFile) {
             m_dbConfig = new TomlSlurper().parse(new File(m_dbConfigFile))
@@ -90,44 +93,67 @@ class Connection {
             m_dbHost = m_dbConfig.dbHost
             m_dbName = m_dbConfig.dbName
             m_dbClass = m_dbConfig.dbClass
+            m_dbOptions = m_dbConfig.dbOptions
         }
 
         switch (m_dbScheme) {
             case "vdb":
                 m_dbClass = "com.denodo.vdp.jdbc.Driver"
+                m_dbOptions = m_dbOptions ?:
+                        "?reuseRegistrySocket=true" +                    // for load balancer set to false
+                        "&wanOptimizedCalls=false" +                     // optimize for WAN
+                        "&queryTimeout=0" +                              // 0 ms = infinite
+                        "&chunkTimeout=1000" +                           // fetch flush @ 10 secs
+                        "&chunkSize=5000"                                // fetch flush @ 500 rows
+                m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 break
             case "snowflake":
                 m_dbClass = "net.snowflake.client.jdbc.SnowflakeDriver"
                 m_dbName = "?db=${m_dbName}"
+                m_dbOptions = m_dbOptions ?: "?queryTimeout=0"
+                m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 break
             default:
                 errorExit("dbscheme not specified")
         }
 
         m_connectionParameters = [
-                url     : "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}",
+                url     : "${m_dbUrl}${m_dbOptions}",
                 user    : m_dbUser,
                 password: m_dbPassword,
                 driver  : m_dbClass
         ]
 
         if (! options.testconnection) {
-            displayOutput(1, "opening connection to ${m_connectionParameters.url}")
+            displayOutput(1, "opening connection to ${m_dbUrl}")
 
-            m_connection = Sql.newInstance(m_connectionParameters)
+            m_dbOptions.tokenize('?&').each {
+                displayOutput(2,"dbOptions: $it")
+            }
 
-            displayOutput(2, "successfully opened connection to ${m_connectionParameters.url}")
+            try {
+                m_connection = Sql.newInstance(m_connectionParameters)
+                displayOutput(2, "successfully opened connection to ${m_dbUrl}")
+            } catch (SQLException sqe) {
+                displayOutput(0,">>> unable to open dbconnection to ${m_connectionParameters.url}; error:")
+                displayOutput(0,sqe)
+                displayOutput(0,"user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
+                System.exit(1)
+            }
         }
     }
 
     void closeConnection() {
-        displayOutput(1, "closing connection to ${m_connectionParameters.url}")
+        displayOutput(1, "closing connection to ${m_dbUrl}")
         m_connection.close()
-        displayOutput(2, "successfully closed connection to ${m_connectionParameters.url}")
+        displayOutput(2, "successfully closed connection to ${m_dbUrl}")
     }
 
     void flap(frequency) {
-        displayOutput(1, "testing connection to ${m_connectionParameters.url}")
+        displayOutput(1, "testing connection to ${m_dbUrl}")
+        m_dbOptions.tokenize('?&').each {
+            displayOutput(2,"dbOptions: $it")
+        }
         List tokens = frequency.split("@")
         Integer iterations = tokens[0] as Integer
         Integer interval = tokens[1] as Integer
@@ -135,7 +161,7 @@ class Connection {
         for (Integer i = 1; i <= iterations; ++i) {
             displayOutput(1, ">>> iteration ${i} of ${iterations} with a ${interval}ms delay")
             m_connection = Sql.newInstance(m_connectionParameters)
-            displayOutput(1, "opened connection to ${m_connectionParameters.url}")
+            displayOutput(1, "opened connection to ${m_dbUrl}")
             displayOutput(1, "sending query")
             m_connection.eachRow("select 1") {
                 displayOutput(1, "processed and discarded result successfully")
@@ -298,7 +324,7 @@ class Connection {
                 displayOutput(1, "overwrite set to: $m_overwrite")
                 break
             default:
-                System.err.println "ERROR - unrecognized command input: $command"
+                errorExit("unrecognized command input: $command")
                 break
         }
     }
@@ -360,6 +386,7 @@ class Connection {
         processSQL(m_sqlStatement)
         m_sqlStatement = ""
         if (m_fileOut != "/dev/stdout") displayOutput(1, "output: $m_fileOut")
+        closeConnection()
     }
 
     void processFileInput() {
@@ -391,5 +418,6 @@ class Connection {
         }
         if (m_fileOut != "/dev/stdout") displayOutput(1, "output: $m_fileOut")
         if (m_sqlStatement != "") errorExit("discarding unterminated SQL = $m_sqlStatement")
+        closeConnection()
     }
 }
