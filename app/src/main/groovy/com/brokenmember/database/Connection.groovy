@@ -134,9 +134,9 @@ class Connection {
             try {
                 m_connection = Sql.newInstance(m_connectionParameters)
                 displayOutput(2, "successfully opened connection to ${m_dbUrl}")
-            } catch (SQLException sqe) {
+            } catch (SQLException sqlException) {
                 displayOutput(0,">>> unable to open dbconnection to ${m_connectionParameters.url}; error:")
-                displayOutput(0,sqe)
+                displayOutput(0,sqlException)
                 displayOutput(0,"user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
                 System.exit(1)
             }
@@ -307,11 +307,8 @@ class Connection {
         switch (tokens[0]) {
             case ".output":
                 m_fileOut = tokens[1]
-                if (new File(m_fileOut).exists()) {
-                    if (! m_overwrite) {
-                        System.err.println "ERROR - file $m_fileOut already exists"
-                        System.exit(1)
-                    }
+                if (new File(m_fileOut).exists() && ! m_overwrite) {
+                    errorExit("file $m_fileOut already exists")
                 }
                 displayOutput(1, "output file set to: $m_fileOut")
                 break
@@ -344,15 +341,19 @@ class Connection {
                 colw = (1..metadata.columnCount).collect { metadata.getColumnDisplaySize(it) }
                 colt = (1..metadata.columnCount).collect { metadata.getColumnType(it) }
             }
-        } catch (SQLException sqe) {
-            println sqe.getMessage()
+        } catch (SQLException sqlException) {
+            println sqlException.getMessage()
             return
         }
 
         if (m_fileOut != "/dev/stdout") {
-            def outFile = new File(m_fileOut)
-            outFile.delete()
-            outFile.createNewFile()
+            try {
+                def outFile = new File(m_fileOut)
+                outFile.delete()
+                outFile.createNewFile()
+            } catch (exception) {
+                errorExit("$exception ($m_fileOut)")
+            }
         }
 
         if (data.size() == 0) {
@@ -397,7 +398,7 @@ class Connection {
 
         new FileReader(m_fileIn).withReader { reader ->
             reader.eachLine { line, lineno ->
-                if (m_verbose >= 3) printf('input line %2d: %s\n', lineno, line)
+                if (m_verbose >= 3) displayOutput(3,sprintf('input line %2d: %s', lineno, line))
                 if (line.startsWith(".")) {
                     displayOutput(3, ">>> line $lineno: CONTROL RECORD: $line")
                     if (m_sqlStatement != "") errorExit("(line $lineno) discarding unterminated SQL = $m_sqlStatement")

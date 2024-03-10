@@ -81,6 +81,17 @@ They are written in TOML format and support the following parameters:
     dbClass     - the database driver class name (optional, defaults based on dbScheme setting) 
                     (tested with com.denodo.vdp.jdbc.Driver and net.snowflake.client.jdbc.SnowflakeDriver) 
 
+## Test Connection Capability
+
+Additionally SqlClient has a connection testing capability. With the --testconnect <arg> 
+option SqlClient will open a database connection, submit a simple query, read the results,
+discard the results, and close the connection a requested number of times, pausing between
+each connection for a requested interval. The --testconnect argument is of the form 'N@M' 
+where N represents the number of connection iterations and M represents the wait interval 
+between connections measured in milliseconds. If the interval is not specified it defaults
+to 1000 (1 second).  This feature is sometimes useful in diagnosing/investigating database 
+connectivity issues.
+
 ## Examples
 
 **File itemdb.config**
@@ -129,11 +140,11 @@ Either of these examples will run the query and send the output to the screen.
         txn.txn_id = txn_audit.txn_id
     ;
 
-Executing txn_audit.sql to produce txn_audit.xml in XML format (shown without --config option)
+Executing txn_audit.sql to produce txn_audit.xml in XML format (shown using short option and without --config option)
 
 `sqlclient -s vdb -n dbhost.mydomain.com:9999 -d itemdb -u appuser -p appword -f txn_audit.sql -o txn_audit.xml -F xml`
 
-Sample execution
+Sample executions
 
     $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3"
     
@@ -142,3 +153,10 @@ Sample execution
          986461 Magnotta - Bel Paese White
          316882 Beer - Fruli,IPA
          887875 Marlbourough Sauv Blanc
+
+    $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format csv
+
+    item_id,description
+    986461,Magnotta - Bel Paese White
+    316882,"Beer - Fruli,IPA"
+    887875,Marlbourough Sauv Blanc

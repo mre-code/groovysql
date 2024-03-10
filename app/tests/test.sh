@@ -26,7 +26,7 @@ function run_cmdline_test() {
     echo "... running cmdline test (format=$FORMAT, options=$OPTIONS)"
     echo "... $EXEC $SQLCLIENT"
 
-    SQL=$(cat $TESTBASE/sqltest.audit)
+    SQL=$(cat $TESTBASE/test.cmdline)
 
     $EXEC $SQLCLIENT                                         \
         --config  $TESTBASE/venture1.config                  \
@@ -42,7 +42,7 @@ function run_stdio_test() {
     echo "... running stdio test (format=$FORMAT, options=$OPTIONS)"
     echo "... $EXEC $SQLCLIENT"
 
-    cat $TESTBASE/sqltest.audit |
+    cat $TESTBASE/test.stdio |
     $EXEC $SQLCLIENT                                         \
         --config  $TESTBASE/venture1.config                  \
         --format $FORMAT                                     \
@@ -73,7 +73,10 @@ cd $PROJECTBASE || exit
 
 cd $GROOVYBASE || exit
 
-usage() { pod2usage -verbose 0 $MYNAME ; exit 1 ; }
+[ -e $TESTBASE/test.cmdline ] || ( cd $TESTBASE; ln -s sqltest.audit test.cmdline )
+[ -e $TESTBASE/test.stdio   ] || ( cd $TESTBASE; ln -s sqltest.audit test.stdio   )
+
+function usage() { pod2usage -verbose 0 $MYNAME ; exit 1 ; }
 
 while getopts :r:FCST:hO:v: OPT
 do
