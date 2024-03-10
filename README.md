@@ -5,8 +5,8 @@ It is written in Groovy, which compiles to Java, and is compatible with
 vendor-provided Java database drivers.
 
 It takes input from any one of standard input, command line, or file.
-SQL statements normally must be terminated with a semi-colon although
-for command-line input the semi-colon is optional.
+SQL statements normally must be terminated with a semicolon although
+for command-line input the semicolon is optional.
 
 Output formats supported are:
 
@@ -83,7 +83,7 @@ They are written in TOML format and support the following parameters:
 
 ## Test Connection Capability
 
-Additionally SqlClient has a connection testing capability. With the --testconnect <arg> 
+Additionally, SqlClient has a connection testing capability. With the --testconnect <arg> 
 option SqlClient will open a database connection, submit a simple query, read the results,
 discard the results, and close the connection a requested number of times, pausing between
 each connection for a requested interval. The --testconnect argument is of the form 'N@M' 

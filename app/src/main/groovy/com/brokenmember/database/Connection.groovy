@@ -8,7 +8,17 @@ import groovy.xml.MarkupBuilder
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 
+import org.jline.reader.LineReader
+import org.jline.reader.LineReaderBuilder
+import org.jline.reader.impl.DefaultParser
+import org.jline.reader.impl.completer.StringsCompleter
+import org.jline.terminal.Terminal
+import org.jline.terminal.TerminalBuilder
+
+import org.apache.commons.lang3.SystemUtils
+
 import java.sql.SQLException
+
 // import groovy.util.logging.Log
 
 class Connection {
@@ -41,6 +51,9 @@ class Connection {
     Map m_dbConfig = [:]
 
     Map m_connectionParameters = [:]
+
+    String m_historyFile
+    String m_historyIgnore = "exit:.format .*:.output .*"
 
     static String timestamp() {
         return new Date().format("yyyy-MM-dd HH:mm:ss")
@@ -101,10 +114,10 @@ class Connection {
                 m_dbClass = "com.denodo.vdp.jdbc.Driver"
                 m_dbOptions = m_dbOptions ?:
                         "?reuseRegistrySocket=true" +                    // for load balancer set to false
-                        "&wanOptimizedCalls=false" +                     // optimize for WAN
-                        "&queryTimeout=0" +                              // 0 ms = infinite
-                        "&chunkTimeout=1000" +                           // fetch flush @ 10 secs
-                        "&chunkSize=5000"                                // fetch flush @ 500 rows
+                                "&wanOptimizedCalls=false" +                     // optimize for WAN
+                                "&queryTimeout=0" +                              // 0 ms = infinite
+                                "&chunkTimeout=1000" +                           // fetch flush @ 10 secs
+                                "&chunkSize=5000"                                // fetch flush @ 500 rows
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 break
             case "snowflake":
@@ -124,20 +137,20 @@ class Connection {
                 driver  : m_dbClass
         ]
 
-        if (! options.testconnect) {
+        if (!options.testconnect) {
             displayOutput(1, "opening connection to ${m_dbUrl}")
 
             m_dbOptions.tokenize('?&').each {
-                displayOutput(2,"dbOptions: $it")
+                displayOutput(2, "dbOptions: $it")
             }
 
             try {
                 m_connection = Sql.newInstance(m_connectionParameters)
                 displayOutput(2, "successfully opened connection to ${m_dbUrl}")
             } catch (SQLException sqlException) {
-                displayOutput(0,">>> unable to open dbconnection to ${m_connectionParameters.url}; error:")
-                displayOutput(0,sqlException)
-                displayOutput(0,"user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
+                displayOutput(0, ">>> unable to open dbconnection to ${m_connectionParameters.url}; error:")
+                displayOutput(0, sqlException)
+                displayOutput(0, "user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
                 System.exit(1)
             }
         }
@@ -152,7 +165,7 @@ class Connection {
     void flap(frequency) {
         displayOutput(1, "testing connection to ${m_dbUrl}")
         m_dbOptions.tokenize('?&').each {
-            displayOutput(2,"dbOptions: $it")
+            displayOutput(2, "dbOptions: $it")
         }
         List tokens = frequency.split("@")
         Integer iterations = tokens[0] as Integer
@@ -179,7 +192,8 @@ class Connection {
         colWidths.eachWithIndex { it, inx ->
             if (m_verbose >= 3) print "column '${columns[inx]}' width = $it (width option=$m_width)"
             colWidths[inx] = Math.min(it, m_width)
-            if (m_verbose >= 3) println "... set to ${colWidths[inx]}" + ((colTypes[inx] <= 10) ? " right " : " left ") +
+            if (m_verbose >= 3) println "... set to ${colWidths[inx]}" + ((colTypes[inx] <= 10) ? " right " : " left " +
+                    "") +
                     "justified"
         }
         new FileWriter(m_fileOut).withWriter { writer ->
@@ -307,7 +321,7 @@ class Connection {
         switch (tokens[0]) {
             case ".output":
                 m_fileOut = tokens[1]
-                if (new File(m_fileOut).exists() && ! m_overwrite) {
+                if (new File(m_fileOut).exists() && !m_overwrite) {
                     errorExit("file $m_fileOut already exists")
                 }
                 displayOutput(1, "output file set to: $m_fileOut")
@@ -392,20 +406,21 @@ class Connection {
 
     void processFileInput() {
         // handle file input
-        if (m_fileIn != "/dev/stdin" && ! new File(m_fileIn).exists()) {
+        if (m_fileIn != "/dev/stdin" && !new File(m_fileIn).exists()) {
             errorExit("input file not found: $m_fileIn")
         }
 
         new FileReader(m_fileIn).withReader { reader ->
             reader.eachLine { line, lineno ->
-                if (m_verbose >= 3) displayOutput(3,sprintf('input line %2d: %s', lineno, line))
+                if (m_verbose >= 3) displayOutput(3, sprintf('input line %2d: %s', lineno, line))
                 if (line.startsWith(".")) {
                     displayOutput(3, ">>> line $lineno: CONTROL RECORD: $line")
                     if (m_sqlStatement != "") errorExit("(line $lineno) discarding unterminated SQL = $m_sqlStatement")
 
                     processCommandInput(line)
 
-                } else if (line ==~ /.*[^\\];\s*$|^;/) {       // non-escaped semicolon followed by only whitespace to eol
+                } else if (line ==~ /.*[^\\];\s*$|^;/) {
+                    // non-escaped semicolon followed by only whitespace to eol
                     m_sqlStatement += " $line"
 
                     processSQL(m_sqlStatement)
@@ -420,5 +435,46 @@ class Connection {
         if (m_fileOut != "/dev/stdout") displayOutput(1, "output: $m_fileOut")
         if (m_sqlStatement != "") errorExit("discarding unterminated SQL = $m_sqlStatement")
         closeConnection()
+    }
+
+    void interactive() {
+
+        m_historyFile = SystemUtils.getUserHome()
+        m_historyFile += "/.sqlclient.history"
+
+        Terminal terminal = TerminalBuilder.terminal()
+
+        LineReader reader = LineReaderBuilder.builder()
+                .terminal(terminal)
+                .completer(new StringsCompleter("select", "insert", "update", "delete", "create", "drop"))
+                .parser(new DefaultParser())
+                .variable(LineReader.HISTORY_FILE, m_historyFile)
+                .variable(LineReader.HISTORY_FILE_SIZE, 10_000)
+                .variable(LineReader.HISTORY_IGNORE, m_historyIgnore)
+                .build();
+
+        while (true) {
+            String line = reader.readLine("> ");
+            if (line == null || line.equalsIgnoreCase("exit")) {
+                break
+            }
+
+            reader.getHistory().add(line)
+
+            if (line.startsWith(".")) {
+                processCommandInput(line)
+            } else if (line ==~ /.*[^\\];\s*$|^;/) {
+                // non-escaped semicolon followed by only whitespace to eol
+                m_sqlStatement += " $line"
+
+                processSQL(m_sqlStatement)
+
+                m_sqlStatement = ""
+            } else {
+                m_sqlStatement += " $line"
+            }
+
+            reader.getHistory().save()
+        }
     }
 }

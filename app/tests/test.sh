@@ -50,6 +50,19 @@ function run_stdio_test() {
         $OPTIONS
 }
 
+function run_interactive_test() {
+    FORMAT=$1
+
+    echo "... running interactive test (format=$FORMAT, options=$OPTIONS)"
+    echo "... $EXEC $SQLCLIENT"
+
+    $EXEC $SQLCLIENT                                         \
+        --config  $TESTBASE/venture1.config                  \
+        --verbose $VERBOSE                                   \
+	--interactive                                        \
+        $OPTIONS
+}
+
 function run_connection_test() {
 
     echo "... running connection test ($FREQUENCY, options=$OPTIONS)"
@@ -78,13 +91,14 @@ cd $GROOVYBASE || exit
 
 function usage() { pod2usage -verbose 0 $MYNAME ; exit 1 ; }
 
-while getopts :r:FCST:hO:v: OPT
+while getopts :r:iFCST:hO:v: OPT
 do
 	case "$OPT" in
 	F)	ACTION=run_file_tests ;;
 	C)	ACTION=run_cmdline_test ;;
 	S)	ACTION=run_stdio_test ;;
 	T)	ACTION=run_connection_test ; FREQUENCY=$OPTARG ;;
+	i)	ACTION=run_interactive_test ;;
 	r)	RUNFORMAT=$OPTARG ;;
 	O)	OPTIONS+=" --$OPTARG" ;;
 	v)	VERBOSE=$OPTARG ;;
@@ -112,6 +126,8 @@ groovy)
 	CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc-3.6.28.jar
 	CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
 	CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
+	CLASSPATH+=:/app/denodo/lib/jline-3.25.1.jar
+	CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
 	;;
 esac
 
@@ -125,6 +141,10 @@ case $ACTION in
 		;;
 	*connect*)
 		run_connection_test
+		exit
+		;;
+	*interactive*)
+		run_interactive_test
 		exit
 		;;
 	"")

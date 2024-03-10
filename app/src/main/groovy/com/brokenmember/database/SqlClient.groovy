@@ -26,6 +26,7 @@ class SqlClient {
             t(longOpt: 'timestamps', 'timestamp output')
             S(longOpt: 'sql', 'specify SQL statement', args: 1, defaultValue: "")
             T(longOpt: 'testconnect', 'run connection test', args:1)
+            i(longOpt: 'interactive', 'run in interactive mode')
 //          a(longOpt: 'authentication', 'specify filename', args: 1)  // TODO
         }
 
@@ -59,6 +60,8 @@ class SqlClient {
             connection.flap(opt.testconnect)
         } else if (opt.sql) {
             connection.processUserInput()
+        } else if (opt.interactive) {
+            connection.interactive()
         } else {
             connection.processFileInput()
         }

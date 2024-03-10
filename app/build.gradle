@@ -27,6 +27,8 @@ dependencies {
     implementation 'org.apache.groovy:groovy-cli-commons:4.0.19'
     implementation 'org.apache.groovy:groovy-toml:4.0.19'
     implementation 'org.apache.commons:commons-csv:1.10.0'
+    implementation 'org.jline:jline:3.25.1'
+    implementation 'org.apache.commons:commons-lang3:3.14.0'
     implementation name: 'snowflake-jdbc-3.6.28'
     implementation name: 'denodo-vdp-jdbcdriver'
 
