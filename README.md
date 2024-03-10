@@ -28,6 +28,7 @@ in the event of a conflict unless the _overwrite_ option is in effect.
     -f,--filein <arg>           specify input filename
     -F,--format <arg>           specify format
     -h,--help                   usage information
+    -i,--interactive            run in interactive mode
     -n,--node <arg>             specify database node
     -o,--fileout <arg>          specify output filename
     -O,--overwrite              overwrite output file
@@ -47,6 +48,9 @@ in one of the output formats selected.
 
 The SQL input can come from a disk file, the command line through the --sql option, 
 or from standard input (keyboard or pipe).
+
+In addition to standard input, SqlClient also supports an interactive line editing 
+mode with retained history.
 
 SqlClient also supports a control record capability.  Control records allow 
 directives to be processed during the SQL processing.  
