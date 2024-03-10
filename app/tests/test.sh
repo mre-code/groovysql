@@ -31,7 +31,7 @@ function run_cmdline_test() {
     $EXEC $SQLCLIENT                                         \
         --config  $TESTBASE/venture1.config                  \
         --sql "$SQL"                                         \
-	      --format $FORMAT                               \
+	      --format $FORMAT                                     \
         --verbose $VERBOSE                                   \
         $OPTIONS
 }
@@ -51,15 +51,14 @@ function run_stdio_test() {
 }
 
 function run_interactive_test() {
-    FORMAT=$1
 
-    echo "... running interactive test (format=$FORMAT, options=$OPTIONS)"
+    echo "... running interactive test (options=$OPTIONS)"
     echo "... $EXEC $SQLCLIENT"
 
     $EXEC $SQLCLIENT                                         \
         --config  $TESTBASE/venture1.config                  \
         --verbose $VERBOSE                                   \
-	--interactive                                        \
+	      --interactive                                        \
         $OPTIONS
 }
 
