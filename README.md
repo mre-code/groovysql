@@ -144,19 +144,91 @@ Executing txn_audit.sql to produce txn_audit.xml in XML format (shown using shor
 
 `sqlclient -s vdb -n dbhost.mydomain.com:9999 -d itemdb -u appuser -p appword -f txn_audit.sql -o txn_audit.xml -F xml`
 
-Sample executions
+### Sample executions
+
+Sample text execution
 
     $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3"
     
     item_id     description
     ----------- ------------------------------
-         986461 Magnotta - Bel Paese White
+         986461 <!Magnotta> - Bel Paese White
          316882 Beer - Fruli,IPA
-         887875 Marlbourough Sauv Blanc
+         887875 Marlbourough Sauv Blanc!
+
+Sample CSV execution (note quoting)
 
     $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format csv
 
     item_id,description
-    986461,Magnotta - Bel Paese White
+    986461,<!Magnotta> - Bel Paese White
     316882,"Beer - Fruli,IPA"
-    887875,Marlbourough Sauv Blanc
+    887875,Marlbourough Sauv Blanc!
+
+Sample HTML execution
+
+    $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format html
+
+    <table>
+      <thead>
+        <tr>
+          <th>item_id</th>
+          <th>description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>986461</td>
+          <td>&lt;!Magnotta&gt; - Bel Paese White</td>
+        </tr>
+        <tr>
+          <td>316882</td>
+          <td>Beer - Fruli,IPA</td>
+        </tr>
+        <tr>
+          <td>887875</td>
+          <td>Marlbourough Sauv Blanc!</td>
+        </tr>
+      </tbody>
+    </table>
+
+Sample XML execution
+
+    $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format xml
+
+    <rows>
+      <rowResult><!-- row: 1 -->
+        <item_id>986461</item_id>
+        <description>&lt;!Magnotta&gt; - Bel Paese White</description>
+      </rowResult>
+      <rowResult><!-- row: 2 -->
+        <item_id>316882</item_id>
+        <description>Beer - Fruli,IPA</description>
+      </rowResult>
+      <rowResult><!-- row: 3 -->
+        <item_id>887875</item_id>
+        <description>Marlbourough Sauv Blanc!</description>
+      </rowResult>
+    </rows>
+
+Sample JSON execution (note: all keys and values are quoted)
+
+    $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format json
+
+    {
+        "rows": [
+            {
+                "item_id": "986461",
+                "description": "<!Magnotta> - Bel Paese White"
+            },
+            {
+                "item_id": "316882",
+                "description": "Beer - Fruli,IPA"
+            },
+            {
+                "item_id": "887875",
+                "description": "Marlbourough Sauv Blanc!"
+            }
+        ]
+    }
+ 
