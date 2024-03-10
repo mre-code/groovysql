@@ -53,7 +53,7 @@ class Connection {
     Map m_connectionParameters = [:]
 
     String m_historyFile
-    String m_historyIgnore = "exit:.format .*:.output .*"
+    String m_historyIgnore = "exit:.format .*:.output .*:.width .*"
 
     static String timestamp() {
         return new Date().format("yyyy-MM-dd HH:mm:ss")
@@ -121,7 +121,7 @@ class Connection {
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 break
             case "snowflake":
-                m_dbClass = "net.snowflake.client.jdbc.SnowflakeDriver"
+                m_dbClass = "com.snowflake.client.jdbc.SnowflakeDriver"
                 m_dbName = "?db=${m_dbName}"
                 m_dbOptions = m_dbOptions ?: "?queryTimeout=0"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
@@ -192,9 +192,8 @@ class Connection {
         colWidths.eachWithIndex { it, inx ->
             if (m_verbose >= 3) print "column '${columns[inx]}' width = $it (width option=$m_width)"
             colWidths[inx] = Math.min(it, m_width)
-            if (m_verbose >= 3) println "... set to ${colWidths[inx]}" + ((colTypes[inx] <= 10) ? " right " : " left " +
-                    "") +
-                    "justified"
+            if (m_verbose >= 3) println "... set to ${colWidths[inx]}" +
+                    ((colTypes[inx] <= 10) ? " right " : " left " + "") + "justified"
         }
         new FileWriter(m_fileOut).withWriter { writer ->
             // output column heading, limit heading width to field width as sql does not
@@ -334,6 +333,10 @@ class Connection {
                 m_overwrite = tokens[1]
                 displayOutput(1, "overwrite set to: $m_overwrite")
                 break
+            case ".width":
+                m_width = tokens[1] as Integer
+                displayOutput(1, "width set to: $m_width")
+                break
             default:
                 errorExit("unrecognized command input: $command")
                 break
@@ -439,8 +442,7 @@ class Connection {
 
     void interactive() {
 
-        m_historyFile = SystemUtils.getUserHome()
-        m_historyFile += "/.sqlclient.history"
+        m_historyFile = "${SystemUtils.getUserHome()}/.sqlclient.history"
 
         Terminal terminal = TerminalBuilder.terminal()
 

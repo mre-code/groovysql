@@ -60,6 +60,7 @@ Directives supported are:
     .format <type>
     .output <filename>
     .overwrite
+    .width <max text column width>
 
 SqlClient supports various verbose levels as well as a timestamp option
 for runtime feedback.
@@ -83,7 +84,7 @@ They are written in TOML format and support the following parameters:
     dbHost      - the TCP network address (hostname:port)
     dbName      - the database name
     dbClass     - the database driver class name (optional, defaults based on dbScheme setting) 
-                    (tested with com.denodo.vdp.jdbc.Driver and net.snowflake.client.jdbc.SnowflakeDriver) 
+                    (tested with com.denodo.vdp.jdbc.Driver and com.snowflake.client.jdbc.SnowflakeDriver) 
 
 ## Test Connection Capability
 
