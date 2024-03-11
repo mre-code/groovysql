@@ -457,7 +457,7 @@ class Connection {
 
         while (true) {
             String line = reader.readLine("> ");
-            if (line == null || line.equalsIgnoreCase("exit")) {
+            if (line == null || line.equalsIgnoreCase("quit")) {
                 break
             }
 

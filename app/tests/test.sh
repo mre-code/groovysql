@@ -7,8 +7,8 @@ function run_file_tests() {
     do
         TESTNAME=${TEST/*./}
 
-	echo "... running $TESTNAME test (format=$FORMAT, options=$OPTIONS)"
-	echo "... $EXEC $SQLCLIENT"
+        echo "... running $TESTNAME test (format=$FORMAT, options=$OPTIONS)"
+        echo "... $EXEC $SQLCLIENT"
 
         $EXEC $SQLCLIENT                                          \
              --config  $TESTBASE/venture1.config                  \
@@ -31,7 +31,7 @@ function run_cmdline_test() {
     $EXEC $SQLCLIENT                                         \
         --config  $TESTBASE/venture1.config                  \
         --sql "$SQL"                                         \
-	      --format $FORMAT                                     \
+        --format $FORMAT                                     \
         --verbose $VERBOSE                                   \
         $OPTIONS
 }
@@ -58,7 +58,7 @@ function run_interactive_test() {
     $EXEC $SQLCLIENT                                         \
         --config  $TESTBASE/venture1.config                  \
         --verbose $VERBOSE                                   \
-	      --interactive                                        \
+        --interactive                                        \
         $OPTIONS
 }
 
@@ -92,63 +92,63 @@ function usage() { pod2usage -verbose 0 $MYNAME ; exit 1 ; }
 
 while getopts :r:iFCST:hO:v: OPT
 do
-	case "$OPT" in
-	F)	ACTION=run_file_tests ;;
-	C)	ACTION=run_cmdline_test ;;
-	S)	ACTION=run_stdio_test ;;
-	T)	ACTION=run_connection_test ; FREQUENCY=$OPTARG ;;
-	i)	ACTION=run_interactive_test ;;
-	r)	RUNFORMAT=$OPTARG ;;
-	O)	OPTIONS+=" --$OPTARG" ;;
-	v)	VERBOSE=$OPTARG ;;
-	h)	pod2usage -verbose 2 $MYNAME ; exit 0 ;;
-	:)	echo "$MYNAME: Option $OPTARG requires a value" >&2; exit 2 ;;
-	*)	usage;;
-	esac
+        case "$OPT" in
+        F)      ACTION=run_file_tests ;;
+        C)      ACTION=run_cmdline_test ;;
+        S)      ACTION=run_stdio_test ;;
+        T)      ACTION=run_connection_test ; FREQUENCY=$OPTARG ;;
+        i)      ACTION=run_interactive_test ;;
+        r)      RUNFORMAT=$OPTARG ;;
+        O)      OPTIONS+=" --$OPTARG" ;;
+        v)      VERBOSE=$OPTARG ;;
+        h)      pod2usage -verbose 2 $MYNAME ; exit 0 ;;
+        :)      echo "$MYNAME: Option $OPTARG requires a value" >&2; exit 2 ;;
+        *)      usage;;
+        esac
 done
 shift $(( OPTIND - 1 ))
 
 case $RUNFORMAT in
 sqlclient)
-	EXEC=""
-       	SQLCLIENT=sqlclient 
-       	type $SQLCLIENT
-	;;
+        EXEC=""
+        SQLCLIENT=sqlclient 
+        type $SQLCLIENT
+        ;;
 jar)
-	EXEC="java -jar" 
-       	SQLCLIENT=$PROJECTBASE/app/build/libs/app-all.jar
-	;;
+        EXEC="java -jar" 
+        SQLCLIENT=$PROJECTBASE/app/build/libs/app-all.jar
+        ;;
 groovy)
-	EXEC="groovy"
-	SQLCLIENT=com/brokenmember/database/SqlClient.groovy
-	export CLASSPATH
-	CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc-3.6.28.jar
-	CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
-	CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
-	CLASSPATH+=:/app/denodo/lib/jline-3.25.1.jar
-	CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
-	;;
+        EXEC="groovy"
+        SQLCLIENT=com/brokenmember/database/SqlClient.groovy
+        export CLASSPATH
+        CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc-3.6.28.jar
+        CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
+        CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
+        CLASSPATH+=:/app/denodo/lib/jline-3.25.1.jar
+        CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
+        ;;
 esac
 
 
 case $ACTION in
-	*file*)
-		if [ $1 ]
-		then TESTS=($1); shift
-		else TESTS=($TESTBASE/sqltest.* missing_input_file)
-		fi
-		;;
-	*connect*)
-		run_connection_test
-		exit
-		;;
-	*interactive*)
-		run_interactive_test
-		exit
-		;;
-	"")
-		usage
-		;;
+        *file*)
+                if [ $1 ]
+                then TESTS=($1); shift
+                else TESTS=($TESTBASE/sqltest.* missing_input_file)
+                fi
+                ;;
+        *connect*)
+                run_connection_test
+                exit
+                ;;
+        *interactive*)
+                run_interactive_test
+                exit
+                ;;
+        "")
+                usage
+                ;;
 esac
 
 if [ $1 ]
