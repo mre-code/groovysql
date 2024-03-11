@@ -442,7 +442,7 @@ class Connection {
 
     void interactive() {
 
-        m_historyFile = "${SystemUtils.getUserHome()}/.sqlclient.history"
+        m_historyFile = "${SystemUtils.getUserHome()}/.sqlclient_history"
 
         Terminal terminal = TerminalBuilder.terminal()
 

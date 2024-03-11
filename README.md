@@ -50,7 +50,7 @@ The SQL input can come from a disk file, the command line through the --sql opti
 or from standard input (keyboard or pipe).
 
 In addition to standard input, SqlClient also supports an interactive line editing 
-mode with retained history.
+mode with retained history.  History is kept in `$HOME/.sqlclient_history`.
 
 SqlClient also supports a control record capability.  Control records allow 
 directives to be processed during the SQL processing.  
@@ -107,6 +107,9 @@ connectivity issues.
     dbHost = "dbhost.mydomain.com:9999"
     dbName = "itemdb"
     dbClass = "com.denodo.vdp.jdbc.Driver"
+
+Specifying the dbClass in the config file is optional.  SqlClient uses a default dbClass based on the vdb option
+but if a dbClass is provided then it will override the default.
 
 **File item-extract.sql:**
 
