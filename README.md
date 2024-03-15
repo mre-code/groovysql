@@ -4,11 +4,13 @@ SqlClient is a database client designed primarily for batch SQL submission.
 It is written in Groovy, which compiles to Java, and is compatible with 
 vendor-provided Java database drivers.  In particular it works with the 
 Denodo JDBC virtual database driver.  It has also been tested with the 
-Snowflake JDBC driver.
+Snowflake JDBC driver and should work with other Java-based database drivers.
 
 It takes input from any one of standard input, command line, or file.
 SQL statements normally must be terminated with a semicolon although
-for command-line input the semicolon is optional.
+for command-line input the semicolon is optional.  In addition to standard
+input SqlClient provides an interactive mode with command line editing and 
+history leveraging the jline3 library.
 
 Output formats supported are:
 
