@@ -1,0 +1,2 @@
+select * from item limit 2;
+select * from customer limit 2;

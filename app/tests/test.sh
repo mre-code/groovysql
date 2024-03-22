@@ -81,6 +81,8 @@ GROOVYBASE=$PROJECTBASE/app/src/main/groovy
 TESTBASE=$PROJECTBASE/app/tests
 RUNFORMAT=groovy
 
+trap "exit 255" 1 2 3 15
+
 cd $PROJECTBASE || exit
 
 cd $GROOVYBASE || exit
