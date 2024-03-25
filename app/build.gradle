@@ -14,6 +14,9 @@ plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
+group = 'com.brokenmember.database'
+version = '2.0'
+
 repositories {
     mavenCentral()
     flatDir {
@@ -22,13 +25,15 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.apache.groovy:groovy-all:4.0.19'
-    implementation 'org.apache.groovy:groovy-dateutil:4.0.19'
-    implementation 'org.apache.groovy:groovy-cli-commons:4.0.19'
-    implementation 'org.apache.groovy:groovy-toml:4.0.19'
+    implementation 'org.apache.groovy:groovy-all:4.0.20'
+    implementation 'org.apache.groovy:groovy-dateutil:4.0.20'
+    implementation 'org.apache.groovy:groovy-cli-commons:4.0.20'
+    implementation 'org.apache.groovy:groovy-toml:4.0.20'
     implementation 'org.apache.commons:commons-csv:1.10.0'
     implementation 'org.jline:jline:3.25.1'
     implementation 'org.apache.commons:commons-lang3:3.14.0'
+    implementation('org.apache.logging.log4j:log4j-core:2.23.1')
+    implementation('org.apache.logging.log4j:log4j-slf4j-impl:2.23.1')
     implementation name: 'snowflake-jdbc-3.6.28'
     implementation name: 'denodo-vdp-jdbcdriver'
 

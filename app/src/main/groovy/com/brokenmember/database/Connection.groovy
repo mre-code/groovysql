@@ -4,6 +4,7 @@ import groovy.cli.commons.OptionAccessor
 import groovy.json.JsonBuilder
 import groovy.sql.Sql
 import groovy.toml.TomlSlurper
+import groovy.util.logging.Slf4j
 import groovy.xml.MarkupBuilder
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
@@ -21,9 +22,10 @@ import java.sql.SQLException
 
 // import groovy.util.logging.Log
 
+@Slf4j
 class Connection {
 
-    def m_connection
+    var m_connection
 
     String m_dbHost
     String m_dbUser
@@ -38,7 +40,7 @@ class Connection {
 
     String m_fileIn
     String m_fileOut
-    Boolean m_overwrite
+    Boolean m_append
 
     Integer m_verbose
 
@@ -47,13 +49,13 @@ class Connection {
 
     String m_sqlStatement
 
-    def m_dbConfigFile
+    var m_dbConfigFile
     Map m_dbConfig = [:]
 
     Map m_connectionParameters = [:]
 
     String m_historyFile
-    String m_historyIgnore = "exit:.format .*:.output .*:.width .*"
+    String m_historyIgnore = "exit:.format .*:.output .*:.width .*:.append .*"
 
     static String timestamp() {
         return new Date().format("yyyy-MM-dd HH:mm:ss")
@@ -86,7 +88,7 @@ class Connection {
 
         m_fileIn = (options.filein ?: "/dev/stdin")
         m_fileOut = (options.fileout ?: "/dev/stdout")
-        m_overwrite = options.overwrite
+        m_append = options.append
 
         m_format = (options.format ?: "text").toLowerCase()
         m_width = (options.width ?: 30)
@@ -106,24 +108,27 @@ class Connection {
             m_dbHost = m_dbConfig.dbHost
             m_dbName = m_dbConfig.dbName
             m_dbClass = m_dbConfig.dbClass
-            m_dbOptions = m_dbConfig.dbOptions
+            m_dbOptions = m_dbConfig.dbOptions.collect { it.value }.join('&')
         }
 
         switch (m_dbScheme) {
             case "vdb":
                 m_dbClass = "com.denodo.vdp.jdbc.Driver"
                 m_dbOptions = m_dbOptions ?:
-                        "?reuseRegistrySocket=true" +                    // for load balancer set to false
+                        "reuseRegistrySocket=true" +                    // for load balancer set to false
                                 "&wanOptimizedCalls=false" +                     // optimize for WAN
                                 "&queryTimeout=0" +                              // 0 ms = infinite
                                 "&chunkTimeout=1000" +                           // fetch flush @ 10 secs
                                 "&chunkSize=5000"                                // fetch flush @ 500 rows
+                m_dbOptions = "?" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 break
             case "snowflake":
                 m_dbClass = "com.snowflake.client.jdbc.SnowflakeDriver"
                 m_dbName = "?db=${m_dbName}"
-                m_dbOptions = m_dbOptions ?: "?queryTimeout=0"
+                m_dbOptions = m_dbOptions ?:
+                        "queryTimeout=0"
+                m_dbOptions = "&" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 break
             default:
@@ -138,7 +143,7 @@ class Connection {
         ]
 
         if (!options.testconnect) {
-            displayOutput(1, "opening connection to ${m_dbUrl}")
+            displayOutput(1, "opening connection to ${m_connectionParameters.url}")
 
             m_dbOptions.tokenize('?&').each {
                 displayOutput(2, "dbOptions: $it")
@@ -195,16 +200,16 @@ class Connection {
             if (m_verbose >= 3) println "... set to ${colWidths[inx]}" +
                     ((colTypes[inx] <= 10) ? " right " : " left " + "") + "justified"
         }
-        new FileWriter(m_fileOut).withWriter { writer ->
+        new FileWriter(m_fileOut, m_append).withWriter { writer ->
             // output column heading, limit heading width to field width as sql does not
             columns.eachWithIndex { col, inx ->
-                def limit = (colWidths[inx] > m_width) ? m_width : colWidths[inx]
+                var limit = (colWidths[inx] > m_width) ? m_width : colWidths[inx]
                 writer.printf("%-${colWidths[inx]}.${limit}s ", col)
             }
             writer.write("\n")
             // output column heading underline
             columns.eachWithIndex { col, inx ->
-                writer.print("-" * colWidths[inx] + " ")
+                writer.write("-" * colWidths[inx] + " ")
             }
             writer.write("\n")
             // output columns for each row, jdbcTypes > 10 are strings, otherwise numbers
@@ -219,7 +224,7 @@ class Connection {
     }
 
     void formatCSVResults(columns, resultSet) {
-        new FileWriter(m_fileOut).withWriter { writer ->
+        new FileWriter(m_fileOut, m_append).withWriter { writer ->
             new CSVPrinter(writer, CSVFormat.DEFAULT).with {
                 printRecord(columns)
                 resultSet.each { row ->
@@ -230,7 +235,7 @@ class Connection {
     }
 
     void formatXMLResults(columns, resultSet) {
-        new FileWriter(m_fileOut).withWriter { writer ->
+        new FileWriter(m_fileOut, m_append).withWriter { writer ->
             new MarkupBuilder(writer).with {
                 rows {
                     resultSet.eachWithIndex { row, inx ->
@@ -248,7 +253,7 @@ class Connection {
     }
 
     void formatHTMLResults(columns, resultSet) {
-        new FileWriter(m_fileOut).withWriter { writer ->
+        new FileWriter(m_fileOut, m_append).withWriter { writer ->
             new MarkupBuilder(writer).with {
                 table {
                     thead {
@@ -275,7 +280,7 @@ class Connection {
 
     void formatJSONResults(columns, resultSet) {
 
-        def json = new JsonBuilder()
+        var json = new JsonBuilder()
 
 // alternative 1: (quotes all values)
 
@@ -307,7 +312,7 @@ class Connection {
 //            )
 //        }
 
-        new FileWriter(m_fileOut).withWriter { writer ->
+        new FileWriter(m_fileOut, m_append).withWriter { writer ->
             writer.write(json.toPrettyString())
             writer.write("\n")
         }
@@ -320,7 +325,7 @@ class Connection {
         switch (tokens[0]) {
             case ".output":
                 m_fileOut = tokens[1]
-                if (new File(m_fileOut).exists() && !m_overwrite) {
+                if (new File(m_fileOut).exists() && !m_append) {
                     errorExit("file $m_fileOut already exists")
                 }
                 displayOutput(1, "output file set to: $m_fileOut")
@@ -329,9 +334,9 @@ class Connection {
                 m_format = tokens[1]
                 displayOutput(1, "output format set to: $m_format")
                 break
-            case ".overwrite":
-                m_overwrite = tokens[1]
-                displayOutput(1, "overwrite set to: $m_overwrite")
+            case ".append":
+                m_append = tokens[1]
+                displayOutput(1, "append set to: $m_append")
                 break
             case ".width":
                 m_width = tokens[1] as Integer
@@ -359,18 +364,9 @@ class Connection {
                 colt = (1..metadata.columnCount).collect { metadata.getColumnType(it) }
             }
         } catch (SQLException sqlException) {
-            println sqlException.getMessage()
+//            println "yup, its an exception alright"
+//            println sqlException.getMessage()
             return
-        }
-
-        if (m_fileOut != "/dev/stdout") {
-            try {
-                def outFile = new File(m_fileOut)
-                outFile.delete()
-                outFile.createNewFile()
-            } catch (exception) {
-                errorExit("$exception ($m_fileOut)")
-            }
         }
 
         if (data.size() == 0) {
