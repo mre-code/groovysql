@@ -192,32 +192,30 @@ class Connection {
 
     void formatTextResults(resultSet, columnNames, colWidths, colTypes) {
         // limit each column display to a max of width bytes
-        colWidths.eachWithIndex { it, inx ->
-            if (m_verbose >= 3) print "column '${columnNames[inx]}' width = $it (width option=$m_width)"
-            colWidths[inx] = Math.min(it, m_width)
-            if (m_verbose >= 3) println "... set to ${colWidths[inx]}" +
-                    ((colTypes[inx] <= 10) ? " right " : " left " + "") + "justified"
+        colWidths.eachWithIndex { var width, int i ->
+            if (m_verbose >= 3) print "column '${columnNames[i]}' width = $width (width option=$m_width)"
+            colWidths[i] = Math.min(width, m_width)
+            if (m_verbose >= 3) println "... set to ${colWidths[i]}" +
+                    ((colTypes[i] <= 10) ? " right " : " left " + "") + "justified"
         }
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
             // output column heading, limit heading width to field width as sql may not
-            columnNames.eachWithIndex { col, inx ->
-                var limit = (colWidths[inx] > m_width) ? m_width : colWidths[inx]
-                writer.printf("%-${colWidths[inx]}.${limit}s ", col)
+            columnNames.eachWithIndex { var col, int i ->
+                var limit = (colWidths[i] > m_width) ? m_width : colWidths[i]
+                writer.printf("%-${colWidths[i]}.${limit}s ", col)
             }
             writer.write("\n")
             // output column heading underline
-            columnNames.eachWithIndex { col, inx ->
-                writer.write("-" * colWidths[inx] + " ")
+            columnNames.eachWithIndex { var col, int i ->
+                writer.write("-" * colWidths[i] + " ")
             }
             writer.write("\n")
             // output columns for each row, jdbcTypes > 10 are strings, otherwise numbers
-            resultSet.each { rowResult ->
-                rowResult.each { row ->
-                    row.eachWithIndex { var entry, int i ->
-                        writer.printf("%" + ((colTypes[i] > 10) ? "-" : "") + "${colWidths[i]}.${m_width}s ", row[i])
-                    }
-                    writer.write("\n")
+            resultSet.each { var row ->
+                row.eachWithIndex { var entry, int i ->
+                    writer.printf("%" + ((colTypes[i] > 10) ? "-" : "") + "${colWidths[i]}.${m_width}s ", row[i])
                 }
+                writer.write("\n")
             }
         }
     }
@@ -237,9 +235,9 @@ class Connection {
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
             new MarkupBuilder(writer).with {
                 rows {
-                    resultSet.eachWithIndex { row, inx ->
+                    resultSet.eachWithIndex { var row, int rowid ->
                         rowResult {
-                            mkp.comment("row: ${inx + 1}")
+                            mkp.comment("row: ${rowid + 1}")
                             columnNames.each { col ->
                                 "$col"(row[col])
                             }
@@ -365,7 +363,7 @@ class Connection {
         try {
             m_connection.execute(sql, metaClosure) { isResultSet, result ->
                 if (isResultSet) {
-                    data << result
+                    data = result
                 } else {
                     displayOutput(0, "updated rowcount: $result")
                 }
