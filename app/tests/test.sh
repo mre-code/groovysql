@@ -80,6 +80,8 @@ PROJECTBASE=$HOME/dox/repos/sqlclient
 GROOVYBASE=$PROJECTBASE/app/src/main/groovy
 TESTBASE=$PROJECTBASE/app/tests
 RUNFORMAT=groovy
+GROOVY_HOME=/app/groovy-5.0.0-SNAPSHOT
+PATH=$GROOVY_HOME/bin:$PATH
 
 trap "exit 255" 1 2 3 15
 

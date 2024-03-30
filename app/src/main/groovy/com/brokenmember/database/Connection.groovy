@@ -4,7 +4,6 @@ import groovy.cli.commons.OptionAccessor
 import groovy.json.JsonBuilder
 import groovy.sql.Sql
 import groovy.toml.TomlSlurper
-import groovy.util.logging.Slf4j
 import groovy.xml.MarkupBuilder
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
@@ -22,7 +21,6 @@ import java.sql.SQLException
 
 // import groovy.util.logging.Log
 
-@Slf4j
 class Connection {
 
     var m_connection
@@ -192,41 +190,42 @@ class Connection {
         }
     }
 
-    void formatTextResults(columns, resultSet, colWidths, colTypes) {
+    void formatTextResults(resultSet, columnNames, colWidths, colTypes) {
         // limit each column display to a max of width bytes
         colWidths.eachWithIndex { it, inx ->
-            if (m_verbose >= 3) print "column '${columns[inx]}' width = $it (width option=$m_width)"
+            if (m_verbose >= 3) print "column '${columnNames[inx]}' width = $it (width option=$m_width)"
             colWidths[inx] = Math.min(it, m_width)
             if (m_verbose >= 3) println "... set to ${colWidths[inx]}" +
                     ((colTypes[inx] <= 10) ? " right " : " left " + "") + "justified"
         }
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
-            // output column heading, limit heading width to field width as sql does not
-            columns.eachWithIndex { col, inx ->
+            // output column heading, limit heading width to field width as sql may not
+            columnNames.eachWithIndex { col, inx ->
                 var limit = (colWidths[inx] > m_width) ? m_width : colWidths[inx]
                 writer.printf("%-${colWidths[inx]}.${limit}s ", col)
             }
             writer.write("\n")
             // output column heading underline
-            columns.eachWithIndex { col, inx ->
+            columnNames.eachWithIndex { col, inx ->
                 writer.write("-" * colWidths[inx] + " ")
             }
             writer.write("\n")
             // output columns for each row, jdbcTypes > 10 are strings, otherwise numbers
-            resultSet.each { row ->
-                row.eachWithIndex { element, inx ->
-                    writer.printf("%" + ((colTypes[inx] > 10) ? "-" : "") + "${colWidths[inx]}.${m_width}s ",
-                            element.value)
+            resultSet.each { rowResult ->
+                rowResult.each { row ->
+                    row.eachWithIndex { var entry, int i ->
+                        writer.printf("%" + ((colTypes[i] > 10) ? "-" : "") + "${colWidths[i]}.${m_width}s ", row[i])
+                    }
+                    writer.write("\n")
                 }
-                writer.write("\n")
             }
         }
     }
 
-    void formatCSVResults(columns, resultSet) {
+    void formatCSVResults(resultSet, columnNames) {
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
             new CSVPrinter(writer, CSVFormat.DEFAULT).with {
-                printRecord(columns)
+                printRecord(columnNames)
                 resultSet.each { row ->
                     printRecord(row.values())
                 }
@@ -234,14 +233,14 @@ class Connection {
         }
     }
 
-    void formatXMLResults(columns, resultSet) {
+    void formatXMLResults(resultSet, columnNames) {
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
             new MarkupBuilder(writer).with {
                 rows {
                     resultSet.eachWithIndex { row, inx ->
                         rowResult {
                             mkp.comment("row: ${inx + 1}")
-                            columns.each { col ->
+                            columnNames.each { col ->
                                 "$col"(row[col])
                             }
                         }
@@ -252,13 +251,13 @@ class Connection {
         }
     }
 
-    void formatHTMLResults(columns, resultSet) {
+    void formatHTMLResults(resultSet, columnNames) {
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
             new MarkupBuilder(writer).with {
                 table {
                     thead {
                         tr {
-                            columns.each { col ->
+                            columnNames.each { col ->
                                 th(col)
                             }
                         }
@@ -266,7 +265,7 @@ class Connection {
                     tbody {
                         resultSet.each { row ->
                             tr {
-                                columns.each { col ->
+                                columnNames.each { col ->
                                     td(row[col])
                                 }
                             }
@@ -278,7 +277,7 @@ class Connection {
         }
     }
 
-    void formatJSONResults(columns, resultSet) {
+    void formatJSONResults(resultSet, columnNames) {
 
         var json = new JsonBuilder()
 
@@ -287,7 +286,7 @@ class Connection {
         json {
             rows(
                     resultSet.collect { row ->
-                        columns.collectEntries { col ->
+                        columnNames.collectEntries { col ->
                             [col, row[col] as String]
                         }
                     }
@@ -299,7 +298,7 @@ class Connection {
 //        json {
 //            rows(
 //                    resultSet.collect { row ->
-//                        row.subMap(columns)
+//                        row.subMap(columnNames)
 //                    }
 //            )
 //        }
@@ -308,7 +307,7 @@ class Connection {
 //
 //        json {
 //            rows(
-// 	              resultSet*.subMap(columns)
+// 	              resultSet*.subMap(columnNames)
 //            )
 //        }
 
@@ -351,21 +350,29 @@ class Connection {
     void processSQL(String sql) {
 
         List data = []
-        List cols = []
-        List colw = []
-        List colt = []
+        List colNames = []
+        List colWidths = []
+        List colTypes = []
+
+        var metaClosure = { metadata ->
+            colNames = (1..metadata.columnCount).collect { metadata.getColumnLabel(it) }
+            colWidths = (1..metadata.columnCount).collect { metadata.getColumnDisplaySize(it) }
+            colTypes = (1..metadata.columnCount).collect { metadata.getColumnType(it) }
+        }
 
         displayOutput(2, "executing: $sql")
 
         try {
-            data = m_connection.rows(sql) { metadata ->
-                cols = (1..metadata.columnCount).collect { metadata.getColumnLabel(it) }
-                colw = (1..metadata.columnCount).collect { metadata.getColumnDisplaySize(it) }
-                colt = (1..metadata.columnCount).collect { metadata.getColumnType(it) }
+            m_connection.execute(sql, metaClosure) { isResultSet, result ->
+                if (isResultSet) {
+                    data << result
+                } else {
+                    displayOutput(0, "updated rowcount: $result")
+                }
             }
         } catch (SQLException sqlException) {
-//            println "yup, its an exception alright"
-//            println sqlException.getMessage()
+            displayOutput(0, ">>> error:")
+            displayOutput(0, sqlException)
             return
         }
 
@@ -375,19 +382,19 @@ class Connection {
 
         switch (m_format) {
             case "text":
-                formatTextResults(cols, data, colw, colt)
+                formatTextResults(data, colNames, colWidths, colTypes)
                 break
             case "csv":
-                formatCSVResults(cols, data)
+                formatCSVResults(data, colNames)
                 break
             case "html":
-                formatHTMLResults(cols, data)
+                formatHTMLResults(data, colNames)
                 break
             case "xml":
-                formatXMLResults(cols, data)
+                formatXMLResults(data, colNames)
                 break
             case "json":
-                formatJSONResults(cols, data)
+                formatJSONResults(data, colNames)
                 break
             default:
                 displayOutput(0, "unrecognized format: $m_format")

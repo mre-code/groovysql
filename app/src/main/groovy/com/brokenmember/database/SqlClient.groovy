@@ -2,9 +2,7 @@ package com.brokenmember.database
 
 import groovy.cli.commons.CliBuilder
 import groovy.cli.commons.OptionAccessor
-import groovy.util.logging.Slf4j
 
-@Slf4j
 class SqlClient {
 
     static void main(String[] args) {
@@ -65,12 +63,6 @@ class SqlClient {
                 printf('%-30s   %s\n', key, System.properties[key])
             }
         }
-
-        log.trace "slf4j trace message"
-        log.debug "slf4j debug message"
-        log.info "slf4j info message"
-        log.warn "slf4j warn message"
-        log.error "slf4j error message"
 
         Connection connection = new Connection(opt)
 

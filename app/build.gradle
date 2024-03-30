@@ -20,15 +20,21 @@ version = '2.0'
 repositories {
     mavenCentral()
     flatDir {
-        dirs '/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x', '/app/d7/lib/extensions/jdbc-drivers/vdp-7.0'
+        dirs '/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x',
+                '/app/d7/lib/extensions/jdbc-drivers/vdp-7.0',
+                '/app/groovy-5.0.0-SNAPSHOT/lib'
     }
 }
 
 dependencies {
-    implementation 'org.apache.groovy:groovy-all:4.0.20'
-    implementation 'org.apache.groovy:groovy-dateutil:4.0.20'
-    implementation 'org.apache.groovy:groovy-cli-commons:4.0.20'
-    implementation 'org.apache.groovy:groovy-toml:4.0.20'
+    implementation 'org.apache.groovy:groovy:5.0.0-SNAPSHOT'
+    implementation 'org.apache.groovy:groovy-dateutil:5.0.0-SNAPSHOT'
+    implementation 'org.apache.groovy:groovy-cli-commons:5.0.0-SNAPSHOT'
+    implementation 'org.apache.groovy:groovy-toml:5.0.0-SNAPSHOT'
+    implementation 'org.apache.groovy:groovy-xml:5.0.0-SNAPSHOT'
+    implementation 'org.apache.groovy:groovy-json:5.0.0-SNAPSHOT'
+    implementation 'org.apache.groovy:groovy-sql:5.0.0-SNAPSHOT'
+    implementation 'org.apache.groovy:groovy-cli-commons:5.0.0-SNAPSHOT'
     implementation 'org.apache.commons:commons-csv:1.10.0'
     implementation 'org.jline:jline:3.25.1'
     implementation 'org.apache.commons:commons-lang3:3.14.0'
