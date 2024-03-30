@@ -2,4 +2,4 @@ SELECT   COUNTRY_REGION, SUM(CASES) AS Cases
 FROM     ECDC_GLOBAL
 GROUP BY COUNTRY_REGION
 order by 2 desc
-limit 500;
+limit 5;

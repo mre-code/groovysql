@@ -196,7 +196,7 @@ class Connection {
             if (m_verbose >= 3) print "column '${columnNames[i]}' width = $width (width option=$m_width)"
             colWidths[i] = Math.min(width, m_width)
             if (m_verbose >= 3) println "... set to ${colWidths[i]}" +
-                    ((colTypes[i] <= 10) ? " right " : " left " + "") + "justified"
+                    ((colTypes[i] <= 10) ? " right " : " left " + "") + "justified (type=${colTypes[i]})"
         }
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
             // output column heading, limit heading width to field width as sql may not
@@ -211,9 +211,16 @@ class Connection {
             }
             writer.write("\n")
             // output columns for each row, jdbcTypes > 10 are strings, otherwise numbers
-            resultSet.each { var row ->
+            String fmt
+            resultSet.each { row ->
                 row.eachWithIndex { var entry, int i ->
-                    writer.printf("%" + ((colTypes[i] > 10) ? "-" : "") + "${colWidths[i]}.${m_width}s ", row[i])
+                    fmt = switch (colTypes[i]) {
+                        case 2..5 -> "%${colWidths[i]}d "               // integers
+                        case 6..7 -> "%${colWidths[i]}.4f "             // real/float
+                        case 8 -> "%${colWidths[i]}.0f "                // double
+                        default -> "%-${colWidths[i]}.${m_width}s "
+                    }
+                    writer.printf(fmt, row[i])
                 }
                 writer.write("\n")
             }
