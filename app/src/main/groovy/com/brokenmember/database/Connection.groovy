@@ -93,6 +93,8 @@ class Connection {
 
         m_verbose = options.verbose
 
+        if (m_verbose >= 1) displayOutput(1,"SqlClient version 2.0 powered by Groovy version ${GroovySystem.version}")
+
 //        if (m_verbose >= 3) {
 //            Sql.LOG.level = java.util.logging.Level.FINE
 //            Logger.getLogger('groovy.sql').level = Level.FINE
@@ -191,34 +193,43 @@ class Connection {
     }
 
     void formatTextResults(resultSet, columnNames, colWidths, colTypes) {
+
         // limit each column display to a max of width bytes
         colWidths.eachWithIndex { var width, int i ->
             if (m_verbose >= 3) print "column '${columnNames[i]}' width = $width (width option=$m_width)"
             colWidths[i] = Math.min(width, m_width)
             if (m_verbose >= 3) println "... set to ${colWidths[i]}" +
-                    ((colTypes[i] <= 10) ? " right " : " left " + "") + "justified (type=${colTypes[i]})"
+                    ((colTypes[i] in [-6,-5,2,3,4,5,6,7,8]) ? " right " : " left " + "") +
+                    "justified (type=${colTypes[i]})"
         }
+
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
+
             // output column heading, limit heading width to field width as sql may not
             columnNames.eachWithIndex { var col, int i ->
                 var limit = (colWidths[i] > m_width) ? m_width : colWidths[i]
                 writer.printf("%-${colWidths[i]}.${limit}s ", col)
             }
             writer.write("\n")
+
             // output column heading underline
             columnNames.eachWithIndex { var col, int i ->
                 writer.write("-" * colWidths[i] + " ")
             }
             writer.write("\n")
-            // output columns for each row, jdbcTypes > 10 are strings, otherwise numbers
+
+            // output result data
             String fmt
             resultSet.each { row ->
                 row.eachWithIndex { var entry, int i ->
                     fmt = switch (colTypes[i]) {
-                        case 2..5 -> "%${colWidths[i]}d "               // integers
-                        case 6..7 -> "%${colWidths[i]}.4f "             // real/float
-                        case 8 -> "%${colWidths[i]}.0f "                // double
-                        default -> "%-${colWidths[i]}.${m_width}s "
+                        case -6..-5 -> "%${colWidths[i]}d "             // tinyint, bigint
+                        case 2 -> "%${colWidths[i]}.0f "                // numeric
+                        case 3 -> "%${colWidths[i]}.2f "                // decimal
+                        case 4..5 -> "%${colWidths[i]}d "               // integer, smallint
+                        case 6..7 -> "%${colWidths[i]}.4f "             // float, real
+                        case 8 -> "%${colWidths[i]}.1f "                // double
+                        default -> "%-${colWidths[i]}.${m_width}s "     // everything else
                     }
                     writer.printf(fmt, row[i])
                 }
@@ -432,13 +443,13 @@ class Connection {
 
                 } else if (line ==~ /.*[^\\];\s*$|^;/) {
                     // non-escaped semicolon followed by only whitespace to eol
-                    m_sqlStatement += " $line"
+                    m_sqlStatement += "\n$line"
 
                     processSQL(m_sqlStatement)
 
                     m_sqlStatement = ""
                 } else {
-                    m_sqlStatement += " $line"
+                    m_sqlStatement += "\n$line"
                 }
             }
         }
