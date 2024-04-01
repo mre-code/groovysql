@@ -73,7 +73,7 @@ class Connection {
         System.exit(2)
     }
 
-    static String getDbDriverVersion(String propertyResource, String... props) {
+    static String getDbDriverVersion(String propertyResource, String[] props) {
         Properties appProps = new Properties().tap {
             load(Thread.currentThread().contextClassLoader.getResourceAsStream(propertyResource))
         }
@@ -194,9 +194,9 @@ class Connection {
         List tokens = frequency.split("@")
         Integer iterations = tokens[0] as Integer
         Integer interval = tokens[1] as Integer
-        interval = (interval ?: 1000)
+        interval = (interval ?: 1)
         for (Integer i = 1; i <= iterations; ++i) {
-            displayOutput(1, ">>> iteration ${i} of ${iterations} with a ${interval}ms delay")
+            displayOutput(1, ">>> iteration ${i} of ${iterations} with a ${interval} sec delay")
             m_connection = Sql.newInstance(m_connectionParameters)
             displayOutput(1, "opened connection to ${m_dbUrl}")
             displayOutput(1, "sending query")
@@ -205,8 +205,8 @@ class Connection {
             }
             closeConnection()
             if (i < iterations) {
-                displayOutput(1, "waiting ${interval}ms")
-                Thread.sleep(interval)
+                displayOutput(1, "waiting ${interval} sec")
+                Thread.sleep(interval*1000)
             }
         }
     }

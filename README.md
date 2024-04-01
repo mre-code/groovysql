@@ -21,12 +21,13 @@ Output formats supported are:
     json
 
 SqlClient is careful to avoid overwriting any existing files and will abort
-in the event of a conflict unless the _overwrite_ option is in effect.
+in the event of a conflict unless the _append_ option is in effect.
 
 ## Command Line Options
 
 **sqlclient [options]**
 
+    -a,--append                 append to output file
     -c,--config <arg>           specify database configuration file
     -d,--database <arg>         specify database name
     -f,--filein <arg>           specify input filename
@@ -35,7 +36,6 @@ in the event of a conflict unless the _overwrite_ option is in effect.
     -i,--interactive            run in interactive mode
     -n,--node <arg>             specify database node
     -o,--fileout <arg>          specify output filename
-    -O,--overwrite              overwrite output file
     -p,--password <arg>         specify database password
     -s,--scheme <arg>           specify database scheme
     -S,--sql <arg>              specify SQL statement
@@ -50,7 +50,7 @@ in the event of a conflict unless the _overwrite_ option is in effect.
 SqlClient reads SQL, submits it to a connected database, and formats the results
 in one of the output formats selected.  
 
-The SQL input can come from a disk file, the command line through the --sql option, 
+The SQL input can come from a disk file, the command line through the `--sql` option, 
 or from standard input (keyboard or pipe).
 
 In addition to standard input, SqlClient also supports an interactive line editing 
@@ -63,7 +63,7 @@ Directives supported are:
 
     .format <type>
     .output <filename>
-    .overwrite
+    .append <true/false>
     .width <max text column width>
 
 SqlClient supports various verbose levels as well as a timestamp option
@@ -73,7 +73,7 @@ for runtime feedback.
 
     level 0 - no messages (except data of course) 
     level 1 - basic messages (open/close)
-    level 2 - enhanced messages (adds open/close success, query)
+    level 2 - enhanced messages (adds version info, open/close success, query audit)
     level 3 - debug messages (adds input trace, text format field adjustments)
     level 4 - debug messages (adds system.properties display)
 
@@ -84,22 +84,23 @@ They are written in TOML format and support the following parameters:
 
     dbUser      - the database username
     dbPassword  - the database password
-    dbScheme    - the JDBC scheme (tested with "vdb" for Denodo and "snowflake" for Snowflake)
+    dbScheme    - the JDBC scheme (vdb::Denodo, snowflake::Snowflake)
     dbHost      - the TCP network address (hostname:port)
     dbName      - the database name
-    dbClass     - the database driver class name (optional, defaults based on dbScheme setting) 
-                    (tested with com.denodo.vdp.jdbc.Driver and com.snowflake.client.jdbc.SnowflakeDriver) 
+    dbClass     - the database driver class name (optional, defaults based on dbScheme) 
+                    vdb defaults to com.denodo.vdp.jdbc.Driver
+                    snowflake defaults to net.snowflake.client.jdbc.SnowflakeDriver 
 
 ## Test Connection Capability
 
-Additionally, SqlClient has a connection testing capability. With the --testconnect <arg> 
+Additionally, SqlClient has a connection testing capability. With the `--testconnect <arg>` 
 option SqlClient will open a database connection, submit a simple query, read the results,
 discard the results, and close the connection a requested number of times, pausing between
-each connection for a requested interval. The --testconnect argument is of the form 'N@M' 
+each connection for a requested interval. The `--testconnect` argument is of the form 'N@M' 
 where N represents the number of connection iterations and M represents the wait interval 
-between connections measured in milliseconds. If the interval is not specified it defaults
-to 1000 (1 second).  This feature is sometimes useful in diagnosing/investigating database 
-connectivity issues.
+between connections measured in seconds. If the interval is not specified it defaults
+to 1 second.  This feature is sometimes useful in diagnosing/investigating intermittent
+database connectivity issues.
 
 ## Examples
 
@@ -119,7 +120,7 @@ but if a dbClass is provided then it will override the default.
 
     .format json
     .output ../extract/items.json
-    .overwrite
+    .append true
     SELECT * FROM ITEM;
 
 **Executing item-extract.sql**
@@ -152,7 +153,7 @@ Either of these examples will run the query and send the output to the screen.
         txn.txn_id = txn_audit.txn_id
     ;
 
-Executing txn_audit.sql to produce txn_audit.xml in XML format (shown using short option and without --config option)
+Executing txn_audit.sql to produce txn_audit.xml in XML format (shown using short option and without `--config` option)
 
 `sqlclient -s vdb -n dbhost.mydomain.com:9999 -d itemdb -u appuser -p appword -f txn_audit.sql -o txn_audit.xml -F xml`
 
