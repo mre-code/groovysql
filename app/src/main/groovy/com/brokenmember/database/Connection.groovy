@@ -137,7 +137,7 @@ class Connection {
                                 "VDBJDBCDatabaseMetadata.driverVersion", "VDBJDBCDatabaseMetadata.driverUpdateVersion")
                 break
             case "snowflake":
-                m_dbClass = "com.snowflake.client.jdbc.SnowflakeDriver"
+                m_dbClass = "net.snowflake.client.jdbc.SnowflakeDriver"
                 m_dbName = "?db=${m_dbName}"
                 m_dbOptions = m_dbOptions ?:
                         "queryTimeout=0"
