@@ -5,11 +5,16 @@ import groovy.cli.commons.OptionAccessor
 
 class SqlClient {
 
+    static void errorExit(String msg) {
+        println ">>> ERROR: $msg"
+        System.exit(1)
+    }
+
     static void main(String[] args) {
 
-        var cli = new CliBuilder(usage: "sqlclient [options]", posix: true, header: "Groovy SQL Client CLI\nOptions:")
+        var cliOptions = new CliBuilder(usage: "sqlclient [options]", posix: true, header: "Groovy SQL Client CLI\nOptions:")
 
-        cli.with {
+        cliOptions.with {
             h(longOpt: 'help', 'usage information')
             v(longOpt: 'verbose', 'specify verbose level', args: 1, type: int, defaultValue: "-1")
             f(longOpt: 'filein', 'specify input filename', args: 1)
@@ -30,47 +35,45 @@ class SqlClient {
 //          A(longOpt: 'authentication', 'specify filename', args: 1)  // TODO
         }
 
-        OptionAccessor opt = cli.parse(args)
+        OptionAccessor options = cliOptions.parse(args)
 
-        if (opt.help || args.size() == 0) {
-            cli.usage()
+        if (options.help || args.size() == 0) {
+            cliOptions.usage()
             return
         }
 
-        if (opt.arguments()) {
-            System.err.println "ERROR - unrecognized input: ${opt.arguments()}"
+        if (options.arguments()) {
+            errorExit("unrecognized input: ${options.arguments().join(" ")}")
         }
 
-        if (opt.fileout) {
-            if (new File(opt.fileout).exists() and !opt.append) {
-                System.err.println "ERROR - file $opt.fileout already exists"
-                return
+        if (options.fileout) {
+            if (new File(options.fileout).exists() and !options.append) {
+                errorExit("file $options.fileout already exists")
             } else {
                 try {
-                    var outFile = new File(opt.fileout)
+                    var outFile = new File(options.fileout)
                     outFile.delete()
                     outFile.createNewFile()
                 } catch (exception) {
-                    System.err.println "ERROR - $exception (${opt.fileout})"
-                    return
+                    errorExit("$exception (${options.fileout})")
                 }
             }
         }
 
-        if (opt.verbose >= 4) {
+        if (options.verbose >= 4) {
             println "System.properties:"
             for (key in System.properties.keySet().sort()) {
                 printf('%-30s   %s\n', key, System.properties[key])
             }
         }
 
-        Connection connection = new Connection(opt)
+        Connection connection = new Connection(options)
 
-        if (opt.testconnect) {
-            connection.flap(opt.testconnect)
-        } else if (opt.sql) {
+        if (options.testconnect) {
+            connection.flap(options.testconnect)
+        } else if (options.sql) {
             connection.processUserInput()
-        } else if (opt.interactive) {
+        } else if (options.interactive) {
             connection.interactive()
         } else {
             connection.processFileInput()

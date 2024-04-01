@@ -70,7 +70,7 @@ class Connection {
     void errorExit(String msg) {
         if (m_timestamps) print "${timestamp()} :: "
         println ">>> ERROR: $msg"
-        System.exit(1)
+        System.exit(2)
     }
 
     static String getDbDriverVersion(String propertyResource, String... props) {
@@ -132,7 +132,7 @@ class Connection {
                                 "&chunkSize=5000"                                // fetch flush @ 500 rows
                 m_dbOptions = "?" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
-                m_dbDriverVersion = "denodo driver " +
+                m_dbDriverVersion = "Denodo driver " +
                         getDbDriverVersion("conf/DriverConfig.properties",
                                 "VDBJDBCDatabaseMetadata.driverVersion", "VDBJDBCDatabaseMetadata.driverUpdateVersion")
                 break
@@ -143,7 +143,7 @@ class Connection {
                         "queryTimeout=0"
                 m_dbOptions = "&" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
-                m_dbDriverVersion = "snowflake driver " +
+                m_dbDriverVersion = "Snowflake driver " +
                         getDbDriverVersion("net/snowflake/client/jdbc/version.properties", "version")
                 break
             default:
