@@ -49,6 +49,7 @@ class Connection {
 
     var m_dbConfigFile
     Map m_dbConfig = [:]
+    String m_dbDriverVersion
 
     Map m_connectionParameters = [:]
 
@@ -72,6 +73,17 @@ class Connection {
         System.exit(1)
     }
 
+    static String getDbDriverVersion(String propertyResource, String... props) {
+        Properties appProps = new Properties().tap {
+            load(Thread.currentThread().contextClassLoader.getResourceAsStream(propertyResource))
+        }
+        List values = []
+        props.each { String property ->
+            values << appProps.getProperty(property)
+        }
+        values.collect().join("-")
+    }
+
     Connection(OptionAccessor options) {
 
         m_dbUser = options.user
@@ -92,8 +104,6 @@ class Connection {
         m_width = (options.width ?: 30)
 
         m_verbose = options.verbose
-
-        if (m_verbose >= 1) displayOutput(1,"SqlClient version 2.0 powered by Groovy version ${GroovySystem.version}")
 
 //        if (m_verbose >= 3) {
 //            Sql.LOG.level = java.util.logging.Level.FINE
@@ -122,6 +132,9 @@ class Connection {
                                 "&chunkSize=5000"                                // fetch flush @ 500 rows
                 m_dbOptions = "?" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
+                m_dbDriverVersion = "denodo driver " +
+                        getDbDriverVersion("conf/DriverConfig.properties",
+                                "VDBJDBCDatabaseMetadata.driverVersion", "VDBJDBCDatabaseMetadata.driverUpdateVersion")
                 break
             case "snowflake":
                 m_dbClass = "com.snowflake.client.jdbc.SnowflakeDriver"
@@ -130,9 +143,15 @@ class Connection {
                         "queryTimeout=0"
                 m_dbOptions = "&" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
+                m_dbDriverVersion = "snowflake driver " +
+                        getDbDriverVersion("net/snowflake/client/jdbc/version.properties", "version")
                 break
             default:
-                errorExit("dbscheme not specified")
+                errorExit("dbscheme not recognized (${m_dbScheme})")
+        }
+
+        if (m_verbose >= 1) {
+            displayOutput(1,"SqlClient 2.0 powered by Groovy ${GroovySystem.version} with ${m_dbDriverVersion}")
         }
 
         m_connectionParameters = [
@@ -472,10 +491,10 @@ class Connection {
                 .variable(LineReader.HISTORY_FILE, m_historyFile)
                 .variable(LineReader.HISTORY_FILE_SIZE, 10_000)
                 .variable(LineReader.HISTORY_IGNORE, m_historyIgnore)
-                .build();
+                .build()
 
         while (true) {
-            String line = reader.readLine("> ");
+            String line = reader.readLine("> ")
             if (line == null || line.equalsIgnoreCase("quit")) {
                 break
             }
