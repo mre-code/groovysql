@@ -60,10 +60,15 @@ class Connection {
         return new Date().format("yyyy-MM-dd HH:mm:ss")
     }
 
-    void displayOutput(Integer level, msg) {
+    void displayOutput(Double level, msg) {
         if (Math.abs(m_verbose) >= level) {
-            if (m_timestamps) print "${timestamp()} :: "
-            println msg
+            String message = msg
+            message.replaceAll("\t","    ").split('\n').each { String fragment ->
+                if (m_timestamps) print "${timestamp()} :: "
+                String slevel = String.valueOf(level)
+                Integer indent = slevel.substring(slevel.indexOf(".")+1) as Integer
+                println " " * indent + fragment
+            }
         }
     }
 
@@ -105,10 +110,7 @@ class Connection {
 
         m_verbose = options.verbose
 
-//        if (m_verbose >= 3) {
-//            Sql.LOG.level = java.util.logging.Level.FINE
-//            Logger.getLogger('groovy.sql').level = Level.FINE
-//        }
+        Sql.LOG.level = java.util.logging.Level.OFF     // turn off groovy.sql default logging
 
         if (m_dbConfigFile) {
             m_dbConfig = new TomlSlurper().parse(new File(m_dbConfigFile))
@@ -173,8 +175,8 @@ class Connection {
                 displayOutput(2, "successfully opened connection to ${m_dbUrl}")
             } catch (SQLException sqlException) {
                 displayOutput(0, ">>> unable to open dbconnection to ${m_dbUrl}; error:")
-                displayOutput(0, sqlException)
-                displayOutput(0, "user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
+                displayOutput(0.4, sqlException)
+                displayOutput(0.4, "user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
                 System.exit(1)
             }
         }
@@ -395,7 +397,7 @@ class Connection {
             colTypes = (1..metadata.columnCount).collect { metadata.getColumnType(it) }
         }
 
-        displayOutput(2, "executing: $sql")
+        displayOutput(2.4, "executing: $sql")
 
         try {
             m_connection.execute(sql, metaClosure) { isResultSet, result ->
@@ -407,7 +409,7 @@ class Connection {
             }
         } catch (SQLException sqlException) {
             displayOutput(0, ">>> error:")
-            displayOutput(0, sqlException)
+            displayOutput(0.4, sqlException)
             return
         }
 
