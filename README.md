@@ -153,7 +153,7 @@ Either of these examples will run the query and send the output to the screen.
         txn.txn_id = txn_audit.txn_id
     ;
 
-Executing txn_audit.sql to produce txn_audit.xml in XML format (shown using short option and without `--config` option)
+Executing txn_audit.sql to produce txn_audit.xml in XML format (shown using short options and without `--config` option)
 
 `sqlclient -s vdb -n dbhost.mydomain.com:9999 -d itemdb -u appuser -p appword -f txn_audit.sql -o txn_audit.xml -F xml`
 

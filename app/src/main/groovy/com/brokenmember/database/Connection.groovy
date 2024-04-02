@@ -132,7 +132,7 @@ class Connection {
                                 "&chunkSize=5000"                                // fetch flush @ 500 rows
                 m_dbOptions = "?" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
-                m_dbDriverVersion = "Denodo driver " +
+                m_dbDriverVersion = "Denodo JDBC " +
                         getDbDriverVersion("conf/DriverConfig.properties",
                                 "VDBJDBCDatabaseMetadata.driverVersion", "VDBJDBCDatabaseMetadata.driverUpdateVersion")
                 break
@@ -143,7 +143,7 @@ class Connection {
                         "queryTimeout=0"
                 m_dbOptions = "&" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
-                m_dbDriverVersion = "Snowflake driver " +
+                m_dbDriverVersion = "Snowflake JDBC " +
                         getDbDriverVersion("net/snowflake/client/jdbc/version.properties", "version")
                 break
             default:
@@ -162,7 +162,7 @@ class Connection {
         ]
 
         if (!options.testconnect) {
-            displayOutput(1, "opening connection to ${m_connectionParameters.url}")
+            displayOutput(1, "opening connection to ${m_dbUrl}")
 
             m_dbOptions.tokenize('?&').each {
                 displayOutput(2, "dbOptions: $it")
@@ -172,7 +172,7 @@ class Connection {
                 m_connection = Sql.newInstance(m_connectionParameters)
                 displayOutput(2, "successfully opened connection to ${m_dbUrl}")
             } catch (SQLException sqlException) {
-                displayOutput(0, ">>> unable to open dbconnection to ${m_connectionParameters.url}; error:")
+                displayOutput(0, ">>> unable to open dbconnection to ${m_dbUrl}; error:")
                 displayOutput(0, sqlException)
                 displayOutput(0, "user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
                 System.exit(1)
@@ -218,7 +218,7 @@ class Connection {
             if (m_verbose >= 3) print "column '${columnNames[i]}' width = $width (width option=$m_width)"
             colWidths[i] = Math.min(width, m_width)
             if (m_verbose >= 3) println "... set to ${colWidths[i]}" +
-                    ((colTypes[i] in [-6,-5,2,3,4,5,6,7,8]) ? " right " : " left " + "") +
+                    ((colTypes[i] in [-6,-5,2,3,4,5,6,7,8]) ? " right " : " left ") +
                     "justified (type=${colTypes[i]})"
         }
 
