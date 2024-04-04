@@ -1,25 +1,27 @@
 package com.brokenmember.database
 
-import groovy.cli.commons.OptionAccessor
-import groovy.json.JsonBuilder
 import groovy.sql.Sql
+
+import groovy.cli.commons.OptionAccessor
+
+import groovy.json.JsonBuilder
 import groovy.toml.TomlSlurper
 import groovy.xml.MarkupBuilder
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 
+import org.jline.reader.EndOfFileException
 import org.jline.reader.LineReader
 import org.jline.reader.LineReaderBuilder
 import org.jline.reader.impl.DefaultParser
 import org.jline.reader.impl.completer.StringsCompleter
 import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
+import org.jline.widget.AutopairWidgets
 
 import org.apache.commons.lang3.SystemUtils
 
 import java.sql.SQLException
-
-// import groovy.util.logging.Log
 
 class Connection {
 
@@ -54,20 +56,23 @@ class Connection {
     Map m_connectionParameters = [:]
 
     String m_historyFile
-    String m_historyIgnore = "exit:.format .*:.output .*:.width .*:.append .*"
+    String m_historyIgnore = "exit*:quit*:.format *:.output *:.width *:.append *"
 
     static String timestamp() {
         return new Date().format("yyyy-MM-dd HH:mm:ss")
     }
 
     void displayOutput(Double level, msg) {
+        println "... level = $level; msg = $msg"
         if (Math.abs(m_verbose) >= level) {
             String message = msg
             message.replaceAll("\t","    ").split('\n').each { String fragment ->
+                println "... level = $level; frag = $fragment"
                 if (m_timestamps) print "${timestamp()} :: "
-                String slevel = String.valueOf(level)
-                Integer indent = slevel.substring(slevel.indexOf(".")+1) as Integer
-                println " " * indent + fragment
+                String displayLevel = String.valueOf(level)
+                Integer displayIndent = displayLevel.substring(displayLevel.indexOf(".")+1) as Integer
+                println "... displayIndent=$displayIndent"
+                println " " * displayIndent + fragment
             }
         }
     }
@@ -407,9 +412,10 @@ class Connection {
                     displayOutput(0, "updated rowcount: $result")
                 }
             }
-        } catch (SQLException sqlException) {
+        } catch (exception) {
             displayOutput(0, ">>> error:")
-            displayOutput(0.4, sqlException)
+            displayOutput(0.4, exception)
+            displayOutput(0, " ")
             return
         }
 
@@ -486,19 +492,37 @@ class Connection {
 
         Terminal terminal = TerminalBuilder.terminal()
 
+        DefaultParser parser = new DefaultParser()
+        parser.setEofOnUnclosedBracket(DefaultParser.Bracket.CURLY,
+                DefaultParser.Bracket.ROUND, DefaultParser.Bracket.SQUARE)
+
         LineReader reader = LineReaderBuilder.builder()
                 .terminal(terminal)
                 .completer(new StringsCompleter("select", "insert", "update", "delete", "create", "drop"))
-                .parser(new DefaultParser())
+                .parser(parser)
+                .variable(LineReader.SECONDARY_PROMPT_PATTERN, "%M%P > ")
+                .variable(LineReader.INDENTATION, 2)
+                .option(LineReader.Option.INSERT_BRACKET, true)
                 .variable(LineReader.HISTORY_FILE, m_historyFile)
                 .variable(LineReader.HISTORY_FILE_SIZE, 10_000)
                 .variable(LineReader.HISTORY_IGNORE, m_historyIgnore)
                 .build()
 
+        AutopairWidgets autopairWidgets = new AutopairWidgets(reader, true)
+
+        autopairWidgets.enable()
+
+        String line
+
         while (true) {
-            String line = reader.readLine("> ")
-            if (line == null || line.equalsIgnoreCase("quit")) {
-                break
+
+            try {
+                line = reader.readLine("> ")
+                if (line == null || line.equalsIgnoreCase("quit")) {
+                    break
+                }
+            } catch (exception) {
+                if (exception = EndOfFileException) return
             }
 
             reader.getHistory().add(line)
@@ -506,14 +530,14 @@ class Connection {
             if (line.startsWith(".")) {
                 processCommandInput(line)
             } else if (line ==~ /.*[^\\];\s*$|^;/) {
-                // non-escaped semicolon followed by only whitespace to eol
-                m_sqlStatement += " $line"
+                // statement terminated (non-escaped semicolon followed by only whitespace to eol)
+                m_sqlStatement += line
 
                 processSQL(m_sqlStatement)
 
                 m_sqlStatement = ""
             } else {
-                m_sqlStatement += " $line"
+                m_sqlStatement += "$line\n"
             }
 
             reader.getHistory().save()
