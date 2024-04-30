@@ -1,0 +1,36 @@
+Array: 2003
+Big int: -5
+Binary: -2
+Bit: -7
+Blob: 2004
+Boolean: 16
+Char: 1
+Clob: 2005
+Date: 91
+Datalink70
+Decimal: 3
+Distinct: 2001
+Double: 8
+Float: 6
+Integer: 4
+JavaObject: 2000
+Long var char: -16
+Nchar: -15
+NClob: 2011
+Varchar: 12
+VarBinary: -3
+Tiny int: -6
+Time stamt with time zone: 2014
+Timestamp: 93
+Time: 92
+Struct: 2002
+SqlXml: 2009
+Smallint: 5
+Rowid: -8
+Refcursor: 2012
+Ref: 2006
+Real: 7
+Nvarchar: -9
+Numeric: 2
+Null: 0
+Smallint: 5

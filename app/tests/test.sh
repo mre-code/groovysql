@@ -80,6 +80,8 @@ PROJECTBASE=$HOME/dox/repos/sqlclient
 GROOVYBASE=$PROJECTBASE/app/src/main/groovy
 TESTBASE=$PROJECTBASE/app/tests
 RUNFORMAT=groovy
+GROOVY_HOME=/usr/local/sdkman/candidates/groovy/current
+PATH=$GROOVY_HOME/bin:$PATH
 
 trap "exit 255" 1 2 3 15
 
@@ -118,7 +120,7 @@ sqlclient)
         ;;
 jar)
         EXEC="java -jar" 
-        SQLCLIENT=$PROJECTBASE/app/build/libs/app-all.jar
+        SQLCLIENT=$PROJECTBASE/app/build/libs/app-2.2-all.jar
         ;;
 groovy)
         EXEC="groovy"
@@ -126,12 +128,12 @@ groovy)
         export CLASSPATH
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc-3.6.28.jar
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
+        CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
         CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
-        CLASSPATH+=:/app/denodo/lib/jline-3.25.1.jar
+        CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
         CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
         ;;
 esac
-
 
 case $ACTION in
         *file*)
@@ -172,7 +174,7 @@ test.sh - SqlClient test suite
 
 =head1 SYNOPSIS
 
-    test.sh [-h] [-FCST] [-O options] [-v level] [test] [format]
+    test.sh [-h] [-FCST] [-r runformat] [-O options] [-v level] [test] [format]
 
 =head1 DESCRIPTION
 
@@ -215,6 +217,13 @@ Specifies options of "timestamps", "overwrite", and "extended".
 Can be used more than once.
 Extended option enables some debugging output.
 
+=item -r runformat
+
+Specifies a runformat of "groovy", "jar", or "sqlclient".
+Specifying "groovy" results in running groovy with the generated class files (groovy SqlClient.groovy),
+specifying "jar" results in running java with the generated jar file (java -jar app.jar),
+and specifying "sqlclient" results in running the generated jar file (sqlclient).
+
 =item -v level
 
 Sets verbose level.
@@ -238,6 +247,10 @@ Verbose level set to 1 by default.
 To run all file-based tests in all formats
 
   test.sh -F
+
+To run all file-based test in all formats using generated jar
+
+  test.sh -r jar -F
 
 To run a single file-based test with JSON output
 

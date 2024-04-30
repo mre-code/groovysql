@@ -1,6 +1,8 @@
 /*
  * SqlClient Groovy application project
- * For more details on building Java & JVM projects, please refer to https://docs.gradle.org/8.6/userguide/building_java_projects.html in the Gradle documentation.
+ * For more details on building Java & JVM projects, please refer to
+ *   https://docs.gradle.org/8.6/userguide/building_java_projects.html
+ * in the Gradle documentation.
  */
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
@@ -15,28 +17,32 @@ plugins {
 }
 
 group = 'com.brokenmember.database'
-version = '2.0'
 
 repositories {
     mavenCentral()
     flatDir {
-        dirs '/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x', '/app/d7/lib/extensions/jdbc-drivers/vdp-7.0'
+        dirs '/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x',
+                '/app/d7/lib/extensions/jdbc-drivers/vdp-7.0'
     }
 }
 
 dependencies {
-    implementation 'org.apache.groovy:groovy-all:4.0.20'
-    implementation 'org.apache.groovy:groovy-dateutil:4.0.20'
-    implementation 'org.apache.groovy:groovy-cli-commons:4.0.20'
-    implementation 'org.apache.groovy:groovy-toml:4.0.20'
+    implementation 'org.apache.groovy:groovy:4.0.21'
+    implementation 'org.apache.groovy:groovy-dateutil:4.0.21'
+    implementation 'org.apache.groovy:groovy-cli-commons:4.0.21'
+    implementation 'org.apache.groovy:groovy-toml:4.0.21'
+    implementation 'org.apache.groovy:groovy-xml:4.0.21'
+    implementation 'org.apache.groovy:groovy-json:4.0.21'
+    implementation 'org.apache.groovy:groovy-sql:4.0.21'
+    implementation 'org.apache.groovy:groovy-cli-commons:4.0.21'
     implementation 'org.apache.commons:commons-csv:1.10.0'
-    implementation 'org.jline:jline:3.25.1'
+    implementation 'org.jline:jline:3.26.1'
     implementation 'org.apache.commons:commons-lang3:3.14.0'
-    implementation('org.apache.logging.log4j:log4j-core:2.23.1')
-    implementation('org.apache.logging.log4j:log4j-slf4j-impl:2.23.1')
+    implementation 'org.apache.logging.log4j:log4j-core:2.23.1'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.23.1'
+    implementation 'org.postgresql:postgresql:42.7.3'
     implementation name: 'snowflake-jdbc-3.6.28'
     implementation name: 'denodo-vdp-jdbcdriver'
-
 
     // used by gradle (only) to integrate with maven
     implementation libs.guava
@@ -73,4 +79,3 @@ tasks.register("myConfigurations") {
 tasks.withType(ShadowJar) {
     mergeGroovyExtensionModules()
 }
-
