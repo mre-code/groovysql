@@ -24,6 +24,7 @@ class SqlClient {
             F(longOpt: 'format', 'specify format', args: 1)
             h(longOpt: 'help', 'usage information')
             i(longOpt: 'interactive', 'run in interactive mode')
+            j(longOpt: 'jsonstyle', 'JSON style', args: 1)
             n(longOpt: 'node', 'specify database node', args: 1)
             p(longOpt: 'password', 'specify database password', args: 1)
             s(longOpt: 'scheme', 'specify database scheme', args: 1)

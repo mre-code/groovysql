@@ -23,7 +23,14 @@ Output formats supported are:
     json
 
 SqlClient is careful to avoid overwriting any existing files and will abort
-in the event of a conflict unless the _append_ option is in effect.
+in the event of a conflict unless the _append_ option is in effect in which case
+it will append the output to an existing file.
+
+SqlClient supports various JSON styles - "quoted", "standard", and "spread".  The default 
+is _quoted_ and results in all values being quoted while _standard_ does not quote integer
+and floating point numeric values.  The _spread_ style is a variant of standard that uses 
+the Groovy spread operator to produce the same output as _standard_.  JSON keys are always quoted
+in line with JSON "standards".
 
 ## Command Line Options
 
@@ -36,6 +43,7 @@ in the event of a conflict unless the _append_ option is in effect.
     -F,--format <arg>           specify format
     -h,--help                   usage information
     -i,--interactive            run in interactive mode
+    -j,--jsonstyle              specify JSON style
     -n,--node <arg>             specify database node
     -o,--fileout <arg>          specify output filename
     -p,--password <arg>         specify database password
@@ -64,6 +72,7 @@ directives to be processed during the SQL processing.
 Directives supported are:
 
     .format <type>
+    .json <style>
     .output <filename>
     .append <true/false>
     .width <max text column width>

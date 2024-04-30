@@ -44,6 +44,7 @@ class Connection {
 
     Integer m_verbose
 
+    String m_jsonStyle
     String m_format
     Integer m_width
 
@@ -63,6 +64,7 @@ class Connection {
     }
 
     void displayOutput(Double level, messageObject) {
+        // level.indent => display at verbose level with optional indent
         if (Math.abs(m_verbose) >= level) {
             String message = messageObject
             message.replaceAll("\t","    ").split('\n').each { String fragment ->
@@ -107,6 +109,7 @@ class Connection {
         m_fileOut = (options.fileout ?: "/dev/stdout")
         m_append = options.append
 
+        m_jsonStyle = (options.jsonstyle ?: "quoted")
         m_format = (options.format ?: "text").toLowerCase()
         m_width = (options.width ?: 30)
 
@@ -326,35 +329,37 @@ class Connection {
 
         var json = new JsonBuilder()
 
-// alternative 1: (quotes all values)
+        switch (m_jsonStyle) {
+            case "quoted": // alternative 1: (quotes all values)
+                json {
+                    rows(
+                            resultSet.collect { rowResult ->
+                                columnNames.collectEntries { columnName ->
+                                    [columnName, rowResult[columnName] as String]
+                                }
+                            }
+                    )
+                }
+                break
 
-        json {
-            rows(
-                    resultSet.collect { rowResult ->
-                        columnNames.collectEntries { columnName ->
-                            [columnName, rowResult[columnName] as String]
-                        }
-                    }
-            )
+            case "standard": // alternative 2: (doesn't quote numeric values)
+                json {
+                    rows(
+                            resultSet.collect { row ->
+                                row.subMap(columnNames)
+                            }
+                    )
+                }
+                break
+
+            case "spread": // alternative 3: (doesn't quote numeric values, uses spread operator)
+                json {
+                    rows(
+                            resultSet*.subMap(columnNames)
+                    )
+                }
+                break
         }
-
-// alternative 2: (doesn't quote numeric values)
-//
-//        json {
-//            rows(
-//                    resultSet.collect { row ->
-//                        row.subMap(columnNames)
-//                    }
-//            )
-//        }
-
-// alternative 3: (doesn't quote numeric values)
-//
-//        json {
-//            rows(
-// 	              resultSet*.subMap(columnNames)
-//            )
-//        }
 
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
             writer.write(json.toPrettyString())
@@ -377,6 +382,10 @@ class Connection {
             case ".format":
                 m_format = tokens[1]
                 displayOutput(1, "output format set to: $m_format")
+                break
+            case ".json":
+                m_jsonStyle = tokens[1]
+                displayOutput(1, "json style set to: $m_jsonStyle")
                 break
             case ".append":
                 m_append = tokens[1]
