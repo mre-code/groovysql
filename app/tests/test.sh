@@ -80,7 +80,7 @@ PROJECTBASE=$HOME/dox/repos/sqlclient
 GROOVYBASE=$PROJECTBASE/app/src/main/groovy
 TESTBASE=$PROJECTBASE/app/tests
 RUNFORMAT=groovy
-GROOVY_HOME=/app/groovy-5.0.0-SNAPSHOT
+GROOVY_HOME=/usr/local/sdkman/candidates/groovy/current
 PATH=$GROOVY_HOME/bin:$PATH
 
 trap "exit 255" 1 2 3 15
@@ -120,7 +120,7 @@ sqlclient)
         ;;
 jar)
         EXEC="java -jar" 
-        SQLCLIENT=$PROJECTBASE/app/build/libs/app-all.jar
+        SQLCLIENT=$PROJECTBASE/app/build/libs/app-2.2-all.jar
         ;;
 groovy)
         EXEC="groovy"
@@ -128,8 +128,9 @@ groovy)
         export CLASSPATH
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc-3.6.28.jar
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
+        CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
         CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
-        CLASSPATH+=:/app/denodo/lib/jline-3.25.1.jar
+        CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
         CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
         ;;
 esac

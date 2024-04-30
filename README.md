@@ -2,15 +2,17 @@
 
 SqlClient is a database client designed primarily for batch SQL submission.
 It is written in Groovy, which compiles to Java, and is compatible with 
-vendor-provided Java database drivers.  In particular it works with the 
+vendor-provided Java database drivers.  In particular, it works with the 
 Denodo JDBC virtual database driver.  It has also been tested with the 
-Snowflake JDBC driver and should work with other Java-based database drivers.
+Snowflake JDBC driver as well as the Postgres JDBC driver and should work
+with other Java-based database drivers.
 
 It takes input from any one of standard input, command line, or file.
 SQL statements normally must be terminated with a semicolon although
 for command-line input the semicolon is optional.  In addition to standard
-input SqlClient provides an interactive mode with command line editing and 
-history leveraging the jline3 library.
+input, for example redirected from a file or pipe, SqlClient also provides 
+an interactive mode with command line editing and history leveraging the 
+jline3 library.  
 
 Output formats supported are:
 
@@ -72,8 +74,8 @@ for runtime feedback.
 ## Verbose levels
 
     level 0 - no messages (except data of course) 
-    level 1 - basic messages (open/close)
-    level 2 - enhanced messages (adds version info, open/close success, query audit)
+    level 1 - basic messages (version info, open/close)
+    level 2 - enhanced messages (adds open/close success, query audit)
     level 3 - debug messages (adds input trace, text format field adjustments)
     level 4 - debug messages (adds system.properties display)
 
@@ -84,12 +86,13 @@ They are written in TOML format and support the following parameters:
 
     dbUser      - the database username
     dbPassword  - the database password
-    dbScheme    - the JDBC scheme (vdb::Denodo, snowflake::Snowflake)
+    dbScheme    - the JDBC scheme (vdb::Denodo, snowflake::Snowflake, postgres::Postgres)
     dbHost      - the TCP network address (hostname:port)
     dbName      - the database name
     dbClass     - the database driver class name (optional, defaults based on dbScheme) 
                     vdb defaults to com.denodo.vdp.jdbc.Driver
-                    snowflake defaults to net.snowflake.client.jdbc.SnowflakeDriver 
+                    snowflake defaults to net.snowflake.client.jdbc.SnowflakeDriver
+                    postgres defaults to org.postgres.Driver
 
 ## Test Connection Capability
 

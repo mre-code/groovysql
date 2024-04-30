@@ -7,8 +7,10 @@ import groovy.cli.commons.OptionAccessor
 import groovy.json.JsonBuilder
 import groovy.toml.TomlSlurper
 import groovy.xml.MarkupBuilder
+
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
+import org.apache.commons.lang3.SystemUtils
 
 import org.jline.reader.EndOfFileException
 import org.jline.reader.LineReader
@@ -18,8 +20,6 @@ import org.jline.reader.impl.completer.StringsCompleter
 import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
 import org.jline.widget.AutopairWidgets
-
-import org.apache.commons.lang3.SystemUtils
 
 import java.sql.SQLException
 
@@ -62,24 +62,21 @@ class Connection {
         return new Date().format("yyyy-MM-dd HH:mm:ss")
     }
 
-    void displayOutput(Double level, msg) {
-        println "... level = $level; msg = $msg"
+    void displayOutput(Double level, messageObject) {
         if (Math.abs(m_verbose) >= level) {
-            String message = msg
+            String message = messageObject
             message.replaceAll("\t","    ").split('\n').each { String fragment ->
-                println "... level = $level; frag = $fragment"
                 if (m_timestamps) print "${timestamp()} :: "
                 String displayLevel = String.valueOf(level)
                 Integer displayIndent = displayLevel.substring(displayLevel.indexOf(".")+1) as Integer
-                println "... displayIndent=$displayIndent"
                 println " " * displayIndent + fragment
             }
         }
     }
 
-    void errorExit(String msg) {
+    void errorExit(String messageObject) {
         if (m_timestamps) print "${timestamp()} :: "
-        println ">>> ERROR: $msg"
+        println ">>> ERROR: $messageObject"
         System.exit(2)
     }
 
@@ -153,12 +150,18 @@ class Connection {
                 m_dbDriverVersion = "Snowflake JDBC " +
                         getDbDriverVersion("net/snowflake/client/jdbc/version.properties", "version")
                 break
+            case "postgresql":
+                m_dbClass = "org.postgresql.Driver"
+                m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
+                var driver = new org.postgresql.Driver()
+                m_dbDriverVersion = "Postgres JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
+                break
             default:
                 errorExit("dbscheme not recognized (${m_dbScheme})")
         }
 
         if (m_verbose >= 1) {
-            displayOutput(1,"SqlClient 2.0 powered by Groovy ${GroovySystem.version} with ${m_dbDriverVersion}")
+            displayOutput(1,"SqlClient 2.0 powered by Groovy ${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
         }
 
         m_connectionParameters = [
@@ -202,8 +205,8 @@ class Connection {
         Integer iterations = tokens[0] as Integer
         Integer interval = tokens[1] as Integer
         interval = (interval ?: 1)
-        for (Integer i = 1; i <= iterations; ++i) {
-            displayOutput(1, ">>> iteration ${i} of ${iterations} with a ${interval} sec delay")
+        for (Integer iteration = 1; iteration <= iterations; ++iteration) {
+            displayOutput(1, ">>> iteration ${iteration} of ${iterations} with a ${interval} sec delay")
             m_connection = Sql.newInstance(m_connectionParameters)
             displayOutput(1, "opened connection to ${m_dbUrl}")
             displayOutput(1, "sending query")
@@ -211,7 +214,7 @@ class Connection {
                 displayOutput(1, "processed and discarded result successfully")
             }
             closeConnection()
-            if (i < iterations) {
+            if (iteration < iterations) {
                 displayOutput(1, "waiting ${interval} sec")
                 Thread.sleep(interval*1000)
             }
@@ -221,43 +224,43 @@ class Connection {
     void formatTextResults(resultSet, columnNames, colWidths, colTypes) {
 
         // limit each column display to a max of width bytes
-        colWidths.eachWithIndex { var width, int i ->
-            if (m_verbose >= 3) print "column '${columnNames[i]}' width = $width (width option=$m_width)"
-            colWidths[i] = Math.min(width, m_width)
-            if (m_verbose >= 3) println "... set to ${colWidths[i]}" +
-                    ((colTypes[i] in [-6,-5,2,3,4,5,6,7,8]) ? " right " : " left ") +
-                    "justified (type=${colTypes[i]})"
+        colWidths.eachWithIndex { var width, int columnIndex ->
+            if (m_verbose >= 3) print "column '${columnNames[columnIndex]}' width = $width (width option=$m_width)"
+            colWidths[columnIndex] = Math.min(width, m_width)
+            if (m_verbose >= 3) println "... set to ${colWidths[columnIndex]}" +
+                    ((colTypes[columnIndex] in [-6, -5, 2, 3, 4, 5, 6, 7, 8]) ? " right " : " left ") +
+                    "justified (type=${colTypes[columnIndex]})"
         }
 
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
 
             // output column heading, limit heading width to field width as sql may not
-            columnNames.eachWithIndex { var col, int i ->
-                var limit = (colWidths[i] > m_width) ? m_width : colWidths[i]
-                writer.printf("%-${colWidths[i]}.${limit}s ", col)
+            columnNames.eachWithIndex { var columnName, int columnIndex ->
+                var limit = (colWidths[columnIndex] > m_width) ? m_width : colWidths[columnIndex]
+                writer.printf("%-${colWidths[columnIndex]}.${limit}s ", columnName)
             }
             writer.write("\n")
 
             // output column heading underline
-            columnNames.eachWithIndex { var col, int i ->
-                writer.write("-" * colWidths[i] + " ")
+            columnNames.eachWithIndex { var columnName, int columnIndex ->
+                writer.write("-" * colWidths[columnIndex] + " ")
             }
             writer.write("\n")
 
             // output result data
-            String fmt
-            resultSet.each { row ->
-                row.eachWithIndex { var entry, int i ->
-                    fmt = switch (colTypes[i]) {
-                        case -6..-5 -> "%${colWidths[i]}d "             // tinyint, bigint
-                        case 2 -> "%${colWidths[i]}.0f "                // numeric
-                        case 3 -> "%${colWidths[i]}.2f "                // decimal
-                        case 4..5 -> "%${colWidths[i]}d "               // integer, smallint
-                        case 6..7 -> "%${colWidths[i]}.4f "             // float, real
-                        case 8 -> "%${colWidths[i]}.1f "                // double
-                        default -> "%-${colWidths[i]}.${m_width}s "     // everything else
+            String formatString
+            resultSet.each { rowResult ->
+                rowResult.eachWithIndex { var entry, int columnIndex ->
+                    formatString = switch (colTypes[columnIndex]) {
+                        case -6..-5 -> "%${colWidths[columnIndex]}d "             // tinyint, bigint
+                        case 2 -> "%${colWidths[columnIndex]}.0f "                // numeric
+                        case 3 -> "%${colWidths[columnIndex]}.2f "                // decimal
+                        case 4..5 -> "%${colWidths[columnIndex]}d "               // integer, smallint
+                        case 6..7 -> "%${colWidths[columnIndex]}.4f "             // float, real
+                        case 8 -> "%${colWidths[columnIndex]}.1f "                // double
+                        default -> "%-${colWidths[columnIndex]}.${m_width}s "     // everything else
                     }
-                    writer.printf(fmt, row[i])
+                    writer.printf(formatString, rowResult[columnIndex])
                 }
                 writer.write("\n")
             }
@@ -268,8 +271,8 @@ class Connection {
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
             new CSVPrinter(writer, CSVFormat.DEFAULT).with {
                 printRecord(columnNames)
-                resultSet.each { row ->
-                    printRecord(row.values())
+                resultSet.each { rowResult ->
+                    printRecord(rowResult.values())
                 }
             }
         }
@@ -279,11 +282,11 @@ class Connection {
         new FileWriter(m_fileOut, m_append).withWriter { writer ->
             new MarkupBuilder(writer).with {
                 rows {
-                    resultSet.eachWithIndex { var row, int rowid ->
-                        rowResult {
+                    resultSet.eachWithIndex { var rowResult, int rowid ->
+                        row {
                             mkp.comment("row: ${rowid + 1}")
-                            columnNames.each { col ->
-                                "$col"(row[col])
+                            columnNames.each { columnName ->
+                                "$columnName"(rowResult[columnName])
                             }
                         }
                     }
@@ -299,16 +302,16 @@ class Connection {
                 table {
                     thead {
                         tr {
-                            columnNames.each { col ->
-                                th(col)
+                            columnNames.each { columnName ->
+                                th(columnName)
                             }
                         }
                     }
                     tbody {
-                        resultSet.each { row ->
+                        resultSet.each { rowResult ->
                             tr {
-                                columnNames.each { col ->
-                                    td(row[col])
+                                columnNames.each { columnName ->
+                                    td(rowResult[columnName])
                                 }
                             }
                         }
@@ -327,9 +330,9 @@ class Connection {
 
         json {
             rows(
-                    resultSet.collect { row ->
-                        columnNames.collectEntries { col ->
-                            [col, row[col] as String]
+                    resultSet.collect { rowResult ->
+                        columnNames.collectEntries { columnName ->
+                            [columnName, rowResult[columnName] as String]
                         }
                     }
             )
@@ -389,7 +392,7 @@ class Connection {
         }
     }
 
-    void processSQL(String sql) {
+    void processSQL(String sqlStatement) {
 
         List data = []
         List colNames = []
@@ -402,10 +405,10 @@ class Connection {
             colTypes = (1..metadata.columnCount).collect { metadata.getColumnType(it) }
         }
 
-        displayOutput(2.4, "executing: $sql")
+        displayOutput(2.4, "executing: $sqlStatement")
 
         try {
-            m_connection.execute(sql, metaClosure) { isResultSet, result ->
+            m_connection.execute(sqlStatement, metaClosure) { isResultSet, result ->
                 if (isResultSet) {
                     data = result
                 } else {
@@ -460,11 +463,11 @@ class Connection {
         }
 
         new FileReader(m_fileIn).withReader { reader ->
-            reader.eachLine { line, lineno ->
-                if (m_verbose >= 3) displayOutput(3, sprintf('input line %2d: %s', lineno, line))
+            reader.eachLine { line, lineNumber ->
+                if (m_verbose >= 3) displayOutput(3, sprintf('input line %2d: %s', lineNumber, line))
                 if (line.startsWith(".")) {
-                    displayOutput(3, ">>> line $lineno: CONTROL RECORD: $line")
-                    if (m_sqlStatement != "") errorExit("(line $lineno) discarding unterminated SQL = $m_sqlStatement")
+                    displayOutput(3, ">>> line $lineNumber: CONTROL RECORD: $line")
+                    if (m_sqlStatement != "") errorExit("(line $lineNumber) discarding unterminated SQL = $m_sqlStatement")
 
                     processCommandInput(line)
 
@@ -493,6 +496,7 @@ class Connection {
         Terminal terminal = TerminalBuilder.terminal()
 
         DefaultParser parser = new DefaultParser()
+
         parser.setEofOnUnclosedBracket(DefaultParser.Bracket.CURLY,
                 DefaultParser.Bracket.ROUND, DefaultParser.Bracket.SQUARE)
 
@@ -522,7 +526,7 @@ class Connection {
                     break
                 }
             } catch (exception) {
-                if (exception = EndOfFileException) return
+                if (exception == EndOfFileException) { println "eof"; return }   //FIXME
             }
 
             reader.getHistory().add(line)
