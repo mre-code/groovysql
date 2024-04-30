@@ -135,7 +135,6 @@ groovy)
         ;;
 esac
 
-
 case $ACTION in
         *file*)
                 if [ $1 ]
@@ -175,7 +174,7 @@ test.sh - SqlClient test suite
 
 =head1 SYNOPSIS
 
-    test.sh [-h] [-FCST] [-O options] [-v level] [test] [format]
+    test.sh [-h] [-FCST] [-r runformat] [-O options] [-v level] [test] [format]
 
 =head1 DESCRIPTION
 
@@ -218,6 +217,13 @@ Specifies options of "timestamps", "overwrite", and "extended".
 Can be used more than once.
 Extended option enables some debugging output.
 
+=item -r runformat
+
+Specifies a runformat of "groovy", "jar", or "sqlclient".
+Specifying "groovy" results in running groovy with the generated class files (groovy SqlClient.groovy),
+specifying "jar" results in running java with the generated jar file (java -jar app.jar),
+and specifying "sqlclient" results in running the generated jar file (sqlclient).
+
 =item -v level
 
 Sets verbose level.
@@ -241,6 +247,10 @@ Verbose level set to 1 by default.
 To run all file-based tests in all formats
 
   test.sh -F
+
+To run all file-based test in all formats using generated jar
+
+  test.sh -r jar -F
 
 To run a single file-based test with JSON output
 
