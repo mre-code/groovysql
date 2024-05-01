@@ -1,4 +1,4 @@
-.json quoted
+.json standard
 select 1 as "id", 'val1' as "value" from dual()
 union
 select 2 as "id", 'val2' as "value" from dual()

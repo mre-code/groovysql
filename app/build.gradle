@@ -16,7 +16,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
-group = 'com.brokenmember.database'
+group = 'net.venturechain.database'
 
 repositories {
     mavenCentral()
@@ -60,7 +60,7 @@ java {
 }
 
 application {
-    mainClass = 'com.brokenmember.database.SqlClient'
+    mainClass = 'net.venturechain.database.SqlClient'
 }
 
 tasks.named("test") {

@@ -124,7 +124,7 @@ jar)
         ;;
 groovy)
         EXEC="groovy"
-        SQLCLIENT=com/brokenmember/database/SqlClient.groovy
+        SQLCLIENT=net/venturechain/database/SqlClient.groovy
         export CLASSPATH
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc-3.6.28.jar
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
