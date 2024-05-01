@@ -1,0 +1,14 @@
+WITH cte_table AS (
+    SELECT customer_uuid
+    FROM customer
+    GROUP BY position),
+    avg_region AS (
+    SELECT region, AVG (bonus) AS average_bonus_for_region
+    FROM bonus_jan
+    GROUP BY region)   
+SELECT b.employee_id, b.first_name, b.last_name, b.position, b.region, b.bonus, ap.average_bonus_for_position, ar.average_bonus_for_region
+FROM bonus_jan b
+JOIN avg_position ap
+ON b.position = ap.position
+JOIN avg_region ar
+ON b.region = ar.region;

@@ -1,0 +1,23 @@
+switch (colTypes[i]) {
+case -7:     BIT
+case -6:     TINYINT
+case -5:     BIGINT
+case -4:     LONGVARBINARY 
+case -3:     VARBINARY
+case -2:     BINARY
+case -1:     LONGVARCHAR
+case 0 :     NULL
+case 1 :     CHAR
+case 2 :     NUMERIC
+case 3 :     DECIMAL
+case 4 :     INTEGER
+case 5 :     SMALLINT
+case 6 :     FLOAT
+case 7 :     REAL
+case 8 :     DOUBLE
+case 12:     VARCHAR
+case 91:     DATE
+case 92:     TIME
+case 93:     TIMESTAMP
+case 1111:   OTHER
+}

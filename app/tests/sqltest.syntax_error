@@ -1,0 +1,1 @@
+delete from customer where customer_uui = 'c67b1db0-2414-481d-ae66-8ab5fd09d8ff';
