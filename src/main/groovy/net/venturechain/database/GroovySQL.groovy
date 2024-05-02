@@ -3,7 +3,7 @@ package net.venturechain.database
 import groovy.cli.commons.CliBuilder
 import groovy.cli.commons.OptionAccessor
 
-class SqlClient {
+class GroovySQL {
 
     static void errorExit(String msg) {
         println ">>> ERROR: $msg"
@@ -12,7 +12,7 @@ class SqlClient {
 
     static void main(String[] args) {
 
-        var cliOptions = new CliBuilder(usage: "sqlclient [options]", posix: true, header: "Groovy SQL Client CLI\nOptions:")
+        var cliOptions = new CliBuilder(usage: "groovysql [options]", posix: true, header: "Groovy SQL Client CLI\nOptions:")
 
         cliOptions.with {
             a(longOpt: 'append', 'output file append mode')

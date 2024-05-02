@@ -1,6 +1,6 @@
-# SqlClient - Groovy SQL Client
+# GroovySQL - Groovy SQL Client
 
-SqlClient is a database client designed primarily for batch SQL submission.
+GroovySQL is a database client designed primarily for batch SQL submission.
 It is written in Groovy, which compiles to Java, and is compatible with 
 vendor-provided Java database drivers.  In particular, it works with the 
 Denodo JDBC virtual database driver.  It has also been tested with the 
@@ -10,7 +10,7 @@ with other Java-based database drivers.
 It takes input from any one of standard input, command line, or file.
 SQL statements normally must be terminated with a semicolon although
 for command-line input the semicolon is optional.  In addition to standard
-input, for example redirected from a file or pipe, SqlClient also provides 
+input, for example redirected from a file or pipe, GroovySQL also provides 
 an interactive mode with command line editing and history leveraging the 
 jline3 library.  
 
@@ -22,11 +22,11 @@ Output formats supported are:
     xml
     json
 
-SqlClient is careful to avoid overwriting any existing files and will abort
+GroovySQL is careful to avoid overwriting any existing files and will abort
 in the event of a conflict unless the _append_ option is in effect in which case
 it will append the output to an existing file.
 
-SqlClient supports various JSON styles - "quoted", "standard", and "spread".  The default 
+GroovySQL supports various JSON styles - "quoted", "standard", and "spread".  The default 
 is _quoted_ and results in all values being quoted while _standard_ does not quote integer
 and floating point numeric values.  The _spread_ style is a variant of standard that uses 
 the Groovy spread operator to produce the same output as _standard_.  JSON keys are always quoted
@@ -34,7 +34,7 @@ in line with JSON "standards".
 
 ## Command Line Options
 
-**sqlclient [options]**
+**groovysql [options]**
 
     -a,--append                 append to output file
     -c,--config <arg>           specify database configuration file
@@ -57,16 +57,16 @@ in line with JSON "standards".
 
 ## Usage
 
-SqlClient reads SQL, submits it to a connected database, and formats the results
+GroovySQL reads SQL, submits it to a connected database, and formats the results
 in one of the output formats selected.  
 
 The SQL input can come from a disk file, the command line through the `--sql` option, 
 or from standard input (keyboard or pipe).
 
-In addition to standard input, SqlClient also supports an interactive line editing 
-mode with retained history.  History is kept in `$HOME/.sqlclient_history`.
+In addition to standard input, GroovySQL also supports an interactive line editing 
+mode with retained history.  History is kept in `$HOME/.groovysql_history`.
 
-SqlClient also supports a control record capability.  Control records allow 
+GroovySQL also supports a control record capability.  Control records allow 
 directives to be processed during the SQL processing.  
 
 Directives supported are:
@@ -77,7 +77,7 @@ Directives supported are:
     .append <true/false>
     .width <max text column width>
 
-SqlClient supports various verbose levels as well as a timestamp option
+GroovySQL supports various verbose levels as well as a timestamp option
 for runtime feedback.
 
 ## Verbose levels
@@ -105,8 +105,8 @@ They are written in TOML format and support the following parameters:
 
 ## Test Connection Capability
 
-Additionally, SqlClient has a connection testing capability. With the `--testconnect <arg>` 
-option SqlClient will open a database connection, submit a simple query, read the results,
+Additionally, GroovySQL has a connection testing capability. With the `--testconnect <arg>` 
+option GroovySQL will open a database connection, submit a simple query, read the results,
 discard the results, and close the connection a requested number of times, pausing between
 each connection for a requested interval. The `--testconnect` argument is of the form 'N@M' 
 where N represents the number of connection iterations and M represents the wait interval 
@@ -125,7 +125,7 @@ database connectivity issues.
     dbName = "itemdb"
     dbClass = "com.denodo.vdp.jdbc.Driver"
 
-Specifying the dbClass in the config file is optional.  SqlClient uses a default dbClass based on the vdb option
+Specifying the dbClass in the config file is optional.  GroovySQL uses a default dbClass based on the vdb option
 but if a dbClass is provided then it will override the default.
 
 **File item-extract.sql:**
@@ -137,13 +137,13 @@ but if a dbClass is provided then it will override the default.
 
 **Executing item-extract.sql**
 
-`sqlclient --config=itemdb.config --filein=item-extract.sql`
+`groovysql --config=itemdb.config --filein=item-extract.sql`
 
 **Executing a SQL statement**
 
-`sqlclient --config=itemdb.config --sql "SELECT * FROM ITEM"`
+`groovysql --config=itemdb.config --sql "SELECT * FROM ITEM"`
 
-`echo "SELECT * FROM ITEM" | sqlclient --config=itemdb.config`
+`echo "SELECT * FROM ITEM" | groovysql --config=itemdb.config`
 
 Either of these examples will run the query and send the output to the screen.
 
@@ -167,13 +167,13 @@ Either of these examples will run the query and send the output to the screen.
 
 Executing txn_audit.sql to produce txn_audit.xml in XML format (shown using short options and without `--config` option)
 
-`sqlclient -s vdb -n dbhost.mydomain.com:9999 -d itemdb -u appuser -p appword -f txn_audit.sql -o txn_audit.xml -F xml`
+`groovysql -s vdb -n dbhost.mydomain.com:9999 -d itemdb -u appuser -p appword -f txn_audit.sql -o txn_audit.xml -F xml`
 
 ### Sample executions
 
 Sample text execution
 
-    $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3"
+    $ groovysql --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3"
     
     item_id     description
     ----------- ------------------------------
@@ -183,7 +183,7 @@ Sample text execution
 
 Sample CSV execution (note quoting)
 
-    $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format csv
+    $ groovysql --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format csv
 
     item_id,description
     986461,<!Magnotta> - Bel Paese White
@@ -192,7 +192,7 @@ Sample CSV execution (note quoting)
 
 Sample HTML execution
 
-    $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format html
+    $ groovysql --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format html
 
     <table>
       <thead>
@@ -219,7 +219,7 @@ Sample HTML execution
 
 Sample XML execution
 
-    $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format xml
+    $ groovysql --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format xml
 
     <rows>
       <rowResult><!-- row: 1 -->
@@ -238,7 +238,7 @@ Sample XML execution
 
 Sample JSON execution (note: all keys and values are quoted)
 
-    $ sqlclient --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format json
+    $ groovysql --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format json
 
     {
         "rows": [

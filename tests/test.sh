@@ -8,9 +8,9 @@ function run_file_tests() {
         TESTNAME=${TEST/*./}
 
         echo "... running $TESTNAME test (format=$FORMAT, options=$OPTIONS)"
-        echo "... $EXEC $SQLCLIENT"
+        echo "... $EXEC $GROOVYSQL"
 
-        $EXEC $SQLCLIENT                                          \
+        $EXEC $GROOVYSQL                                          \
              --config  $TESTBASE/venture1.config                  \
              --filein  $TESTBASE/sqltest.$TESTNAME                \
              --fileout $TESTBASE/results-$TESTNAME.$FORMAT        \
@@ -24,11 +24,11 @@ function run_cmdline_test() {
     FORMAT=$1
 
     echo "... running cmdline test (format=$FORMAT, options=$OPTIONS)"
-    echo "... $EXEC $SQLCLIENT"
+    echo "... $EXEC $GROOVYSQL"
 
     SQL=$(cat $TESTBASE/test.cmdline)
 
-    $EXEC $SQLCLIENT                                         \
+    $EXEC $GROOVYSQL                                         \
         --config  $TESTBASE/venture1.config                  \
         --sql "$SQL"                                         \
         --format $FORMAT                                     \
@@ -40,10 +40,10 @@ function run_stdio_test() {
     FORMAT=$1
 
     echo "... running stdio test (format=$FORMAT, options=$OPTIONS)"
-    echo "... $EXEC $SQLCLIENT"
+    echo "... $EXEC $GROOVYSQL"
 
     cat $TESTBASE/test.stdio |
-    $EXEC $SQLCLIENT                                         \
+    $EXEC $GROOVYSQL                                         \
         --config  $TESTBASE/venture1.config                  \
         --format $FORMAT                                     \
         --verbose $VERBOSE                                   \
@@ -53,9 +53,9 @@ function run_stdio_test() {
 function run_interactive_test() {
 
     echo "... running interactive test (options=$OPTIONS)"
-    echo "... $EXEC $SQLCLIENT"
+    echo "... $EXEC $GROOVYSQL"
 
-    $EXEC $SQLCLIENT                                         \
+    $EXEC $GROOVYSQL                                         \
         --config  $TESTBASE/venture1.config                  \
         --verbose $VERBOSE                                   \
         --interactive                                        \
@@ -65,9 +65,9 @@ function run_interactive_test() {
 function run_connection_test() {
 
     echo "... running connection test ($FREQUENCY, options=$OPTIONS)"
-    echo "... $EXEC $SQLCLIENT"
+    echo "... $EXEC $GROOVYSQL"
 
-    $EXEC $SQLCLIENT                                         \
+    $EXEC $GROOVYSQL                                         \
         --config  $TESTBASE/venture1.config                  \
         --testconnect $FREQUENCY                             \
         $OPTIONS
@@ -76,7 +76,7 @@ function run_connection_test() {
 
 MYNAME=~+/$0
 VERBOSE=0
-PROJECTBASE=$HOME/dox/repos/sqlclient
+PROJECTBASE=$HOME/dox/repos/groovysql
 GROOVYBASE=$PROJECTBASE/app/src/main/groovy
 TESTBASE=$PROJECTBASE/app/tests
 RUNFORMAT=groovy
@@ -113,18 +113,18 @@ done
 shift $(( OPTIND - 1 ))
 
 case $RUNFORMAT in
-sqlclient)
+groovysql)
         EXEC=""
-        SQLCLIENT=sqlclient 
-        type $SQLCLIENT
+        GROOVYSQL=groovysql 
+        type $GROOVYSQL
         ;;
 jar)
         EXEC="java -jar" 
-        SQLCLIENT=$PROJECTBASE/app/build/libs/app-2.2-all.jar
+        GROOVYSQL=$PROJECTBASE/app/build/libs/app-2.2-all.jar
         ;;
 groovy)
         EXEC="groovy"
-        SQLCLIENT=net/venturechain/database/SqlClient.groovy
+        GROOVYSQL=net/venturechain/database/GroovySQL.groovy
         export CLASSPATH
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc-3.6.28.jar
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
@@ -170,7 +170,7 @@ exit
 
 =head1 NAME
 
-test.sh - SqlClient test suite
+test.sh - GroovySQL test suite
 
 =head1 SYNOPSIS
 
@@ -178,7 +178,7 @@ test.sh - SqlClient test suite
 
 =head1 DESCRIPTION
 
-Provides a command line interface to run the various tests for SqlClient.
+Provides a command line interface to run the various tests for GroovySQL.
 
 Formats supported:
 
@@ -219,10 +219,10 @@ Extended option enables some debugging output.
 
 =item -r runformat
 
-Specifies a runformat of "groovy", "jar", or "sqlclient".
-Specifying "groovy" results in running groovy with the generated class files (groovy SqlClient.groovy),
+Specifies a runformat of "groovy", "jar", or "groovysql".
+Specifying "groovy" results in running groovy with the generated class files (groovy GroovySQL.groovy),
 specifying "jar" results in running java with the generated jar file (java -jar app.jar),
-and specifying "sqlclient" results in running the generated jar file (sqlclient).
+and specifying "groovysql" results in running the generated jar file (groovysql).
 
 =item -v level
 

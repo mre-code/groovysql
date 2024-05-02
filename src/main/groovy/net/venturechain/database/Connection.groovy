@@ -164,7 +164,7 @@ class Connection {
         }
 
         if (m_verbose >= 1) {
-            displayOutput(1,"SqlClient 2.0 powered by Groovy ${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
+            displayOutput(1,"GroovySQL 2.0 powered by Groovy ${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
         }
 
         m_connectionParameters = [
@@ -500,7 +500,7 @@ class Connection {
 
     void interactive() {
 
-        m_historyFile = "${SystemUtils.getUserHome()}/.sqlclient_history"
+        m_historyFile = "${SystemUtils.getUserHome()}/.groovysql_history"
 
         Terminal terminal = TerminalBuilder.terminal()
 
