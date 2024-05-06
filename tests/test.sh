@@ -77,8 +77,8 @@ function run_connection_test() {
 MYNAME=~+/$0
 VERBOSE=0
 PROJECTBASE=$HOME/dox/repos/groovysql
-GROOVYBASE=$PROJECTBASE/app/src/main/groovy
-TESTBASE=$PROJECTBASE/app/tests
+GROOVYBASE=$PROJECTBASE/src/main/groovy
+TESTBASE=$PROJECTBASE/tests
 RUNFORMAT=groovy
 GROOVY_HOME=/usr/local/sdkman/candidates/groovy/current
 PATH=$GROOVY_HOME/bin:$PATH
