@@ -1,19 +1,67 @@
 # GroovySQL - Groovy SQL Client
-
 GroovySQL is a database client designed primarily for batch SQL submission.
 It is written in Groovy, which compiles to Java, and is compatible with 
 vendor-provided Java database drivers.  In particular, it works with the 
 Denodo JDBC virtual database driver.  It has also been tested with the 
 Snowflake JDBC driver as well as the Postgres JDBC driver and should work
-with other Java-based database drivers.
+with other Java-based database drivers though adding additional
+database driver support requires some minor changes and rebuilding GroovySQL.
 
-It takes input from any one of standard input, command line, or file.
+GroovySQL takes input from any one of standard input, command line, or file.
 SQL statements normally must be terminated with a semicolon although
 for command-line input the semicolon is optional.  In addition to standard
 input, for example redirected from a file or pipe, GroovySQL also provides 
 an interactive mode with command line editing and history leveraging the 
 jline3 library.  
 
+## Building GroovySQL
+GroovySQL is built using Gradle and can be done following these steps:
+1. Clone the GroovySQL repository to your machine via the usual Git methods
+2. Change directory into the cloned repo (cd groovysql)
+3. Execute the Gradle wrapper (./gradlew shadowJar)
+
+The Gradle wrapper (gradlew) will take care of downloading and installing the
+right version of Gradle, compiling everything, and putting together the final
+jar file as ./build/libs/groovysql-x.y-all.jar, where x.y represents the current
+version of GroovySQL.
+
+## Deploying GroovySQL
+GroovySQL, when deployed as an executable jar (recommended), does not require anything 
+to be installed other than Java.  All other requirements are self-contained 
+in the GroovySQL jar file.  In particular there is no requirement to install
+Groovy or any database drivers, GroovySQL will locate all those artifacts 
+in its jar file at runtime.  The jar file is not extracted or installed anywhere.  
+
+## Running GroovySQL
+GroovySQL, like any Java program, can be run in one of two ways.  Either the single groovysql.jar file needs to be 
+placed somewhere in the filesystem, e.g. /usr/local/lib/groovysql.jar, and then GroovySQL can be run via Java jar
+execution:
+
+```
+java -jar /usr/local/lib/groovysql.jar <options>
+```
+
+Or the jar file can be placed in the filesystem in the execution path (PATH), 
+made executable, and renamed as groovysql, in which case it can be executed as a traditional command:
+
+```
+groovysql <options>
+```
+
+## Additional package support
+This optional execution approach often requires the `binfmts-support` and `jarwrapper` packages.
+To install these packages:
+
+```
+sudo apt install binfmt-support
+sudo apt install jarwrapper
+```
+
+After installing the packages, the `binfmts-support --display` command will display the configuration.  Other options
+allow updating the configuration if necessary.  This [web page](https://binfmt-support.nongnu.org/) provides some
+information about the package.  There is also the update-binfmts man page reference that goes into some level of detail.
+
+## GroovySQL output formats
 Output formats supported are:
 
     text
@@ -22,9 +70,10 @@ Output formats supported are:
     xml
     json
 
-GroovySQL is careful to avoid overwriting any existing files and will abort
-in the event of a conflict unless the _append_ option is in effect in which case
-it will append the output to an existing file.
+GroovySQL is designed for use in production batch operations and is careful to avoid overwriting 
+any existing files and will abort in the event of a conflict unless the _append_ option is in effect 
+in which case it will append the output to an existing file.  Following this approach GroovySQL will
+not result in data loss though data loss can still occur through other mechanisms, e.g. file redirection, etc.
 
 GroovySQL supports various JSON styles - "quoted", "standard", and "spread".  The default 
 is _quoted_ and results in all values being quoted while _standard_ does not quote integer
@@ -33,7 +82,6 @@ the Groovy spread operator to produce the same output as _standard_.  JSON keys 
 in line with JSON "standards".
 
 ## Command Line Options
-
 **groovysql [options]**
 
     -a,--append                 append to output file
@@ -55,19 +103,21 @@ in line with JSON "standards".
     -v,--verbose <arg>          specify verbose level
     -w,--width <arg>            limit text column width
 
-## Usage
+Either the short or long option can be used, with the <arg> supplied as needed.
 
-GroovySQL reads SQL, submits it to a connected database, and formats the results
-in one of the output formats selected.  
+## Usage
+GroovySQL reads SQL input, submits SQL statements to a connected database, and formats the results in one of the output
+formats selected.  
 
 The SQL input can come from a disk file, the command line through the `--sql` option, 
 or from standard input (keyboard or pipe).
 
 In addition to standard input, GroovySQL also supports an interactive line editing 
-mode with retained history.  History is kept in `$HOME/.groovysql_history`.
+mode with retained history using the [jline3 library](https://jline.github.io/).  History is kept in 
+`$HOME/.groovysql_history`.
 
-GroovySQL also supports a control record capability.  Control records allow 
-directives to be processed during the SQL processing.  
+GroovySQL also supports a control record capability.  Control records allow directives to be processed during the SQL 
+processing.  
 
 Directives supported are:
 
@@ -77,11 +127,13 @@ Directives supported are:
     .append <true/false>
     .width <max text column width>
 
-GroovySQL supports various verbose levels as well as a timestamp option
-for runtime feedback.
+The directives allow various settings that are available at the command line to be specified in the SQL input.  For 
+example the output file name can be changed between SQL statements, the maximum column width for text output can
+be changed, etc.
+
+GroovySQL supports various verbose levels as well as a timestamp option for runtime operational feedback.
 
 ## Verbose levels
-
     level 0 - no messages (except data of course) 
     level 1 - basic messages (version info, open/close)
     level 2 - enhanced messages (adds open/close success, query audit)
@@ -89,9 +141,8 @@ for runtime feedback.
     level 4 - debug messages (adds system.properties display)
 
 ## Config file format
-
-Config files are optional files containing all the database connection parameters.
-They are written in TOML format and support the following parameters:
+Config files are optional files containing all the database connection parameters for a given database.
+They are written in [TOML format](https://toml.io/en/) and support the following parameters:
 
     dbUser      - the database username
     dbPassword  - the database password
@@ -104,7 +155,6 @@ They are written in TOML format and support the following parameters:
                     postgres defaults to org.postgres.Driver
 
 ## Test Connection Capability
-
 Additionally, GroovySQL has a connection testing capability. With the `--testconnect <arg>` 
 option GroovySQL will open a database connection, submit a simple query, read the results,
 discard the results, and close the connection a requested number of times, pausing between
@@ -115,7 +165,6 @@ to 1 second.  This feature is sometimes useful in diagnosing/investigating inter
 database connectivity issues.
 
 ## Examples
-
 **File itemdb.config**
 
     dbUser = "appuser"
@@ -135,20 +184,22 @@ but if a dbClass is provided then it will override the default.
     .append true
     SELECT * FROM ITEM;
 
-**Executing item-extract.sql**
+**Executing item-extract.sql** with directives controlling output format and location
 
 `groovysql --config=itemdb.config --filein=item-extract.sql`
 
-**Executing a SQL statement**
+**Executing a SQL statement** with output to standard output (the terminal)
 
 `groovysql --config=itemdb.config --sql "SELECT * FROM ITEM"`
+
+Or reading the statement from a pipe
 
 `echo "SELECT * FROM ITEM" | groovysql --config=itemdb.config`
 
 Either of these examples will run the query and send the output to the screen.
 
 **File txn_audit.sql**
-
+```sql
     select
       100                           -- unnamed integer field
     , 200 as "named field 1"        -- field name longer than field width
@@ -164,13 +215,15 @@ Either of these examples will run the query and send the output to the screen.
     on
         txn.txn_id = txn_audit.txn_id
     ;
+```
 
 Executing txn_audit.sql to produce txn_audit.xml in XML format (shown using short options and without `--config` option)
 
-`groovysql -s vdb -n dbhost.mydomain.com:9999 -d itemdb -u appuser -p appword -f txn_audit.sql -o txn_audit.xml -F xml`
+```
+$ groovysql -s vdb -n dbhost.mydomain.com:9999 -d itemdb -u appuser -p appword -f txn_audit.sql -o txn_audit.xml -F xml
+```
 
 ### Sample executions
-
 Sample text execution
 
     $ groovysql --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3"
@@ -222,18 +275,18 @@ Sample XML execution
     $ groovysql --config=itemdb.config --sql "SELECT ITEM_ID, DESCRIPTION FROM ITEM LIMIT 3" --format xml
 
     <rows>
-      <rowResult><!-- row: 1 -->
+      <row><!-- row: 1 -->
         <item_id>986461</item_id>
         <description>&lt;!Magnotta&gt; - Bel Paese White</description>
-      </rowResult>
-      <rowResult><!-- row: 2 -->
+      </row>
+      <row><!-- row: 2 -->
         <item_id>316882</item_id>
         <description>Beer - Fruli,IPA</description>
-      </rowResult>
-      <rowResult><!-- row: 3 -->
+      </row>
+      <row><!-- row: 3 -->
         <item_id>887875</item_id>
         <description>Marlbourough Sauv Blanc!</description>
-      </rowResult>
+      </row>
     </rows>
 
 Sample JSON execution (note: all keys and values are quoted)
@@ -257,3 +310,8 @@ Sample JSON execution (note: all keys and values are quoted)
         ]
     }
  
+Sample execution without results (CREATE/INSERT/DELETE/UPDATE)
+
+    $ groovysql --config=itemdb.config --sql "DELETE FROM ITEM WHERE ITEM_ID IS NULL"
+
+    updated rowcount: 0
