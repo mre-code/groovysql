@@ -164,7 +164,7 @@ class Connection {
         }
 
         if (m_verbose >= 1) {
-            displayOutput(1,"GroovySQL 2.0 powered by Groovy ${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
+            displayOutput(1,"GroovySQL 2.3 powered by Groovy ${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
         }
 
         m_connectionParameters = [
@@ -254,16 +254,20 @@ class Connection {
             String formatString
             resultSet.each { rowResult ->
                 rowResult.eachWithIndex { var entry, int columnIndex ->
-                    formatString = switch (colTypes[columnIndex]) {
-                        case -6..-5 -> "%${colWidths[columnIndex]}d "             // tinyint, bigint
-                        case 2 -> "%${colWidths[columnIndex]}.0f "                // numeric
-                        case 3 -> "%${colWidths[columnIndex]}.2f "                // decimal
-                        case 4..5 -> "%${colWidths[columnIndex]}d "               // integer, smallint
-                        case 6..7 -> "%${colWidths[columnIndex]}.4f "             // float, real
-                        case 8 -> "%${colWidths[columnIndex]}.1f "                // double
-                        default -> "%-${colWidths[columnIndex]}.${m_width}s "     // everything else
+                    if (rowResult[columnIndex] == null) {
+                        writer.printf("%-${colWidths[columnIndex]}.${m_width}s ", " ")
+                    } else {
+                        formatString = switch (colTypes[columnIndex]) {
+                            case -6..-5 -> "%${colWidths[columnIndex]}d "             // tinyint, bigint
+                            case 2 -> "%${colWidths[columnIndex]}.0f "                // numeric
+                            case 3 -> "%${colWidths[columnIndex]}.2f "                // decimal
+                            case 4..5 -> "%${colWidths[columnIndex]}d "               // integer, smallint
+                            case 6..7 -> "%${colWidths[columnIndex]}.4f "             // float, real
+                            case 8 -> "%${colWidths[columnIndex]}.1f "                // double
+                            default -> "%-${colWidths[columnIndex]}.${m_width}s "     // everything else
+                        }
+                        writer.printf(formatString, rowResult[columnIndex])
                     }
-                    writer.printf(formatString, rowResult[columnIndex])
                 }
                 writer.write("\n")
             }
