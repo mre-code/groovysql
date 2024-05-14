@@ -135,7 +135,7 @@ GroovySQL supports various verbose levels as well as a timestamp option for runt
 
 ## Verbose levels
     level 0 - no messages (except data of course) 
-    level 1 - basic messages (version info, open/close)
+    level 1 - basic messages (version info, open/close - default)
     level 2 - enhanced messages (adds open/close success, query audit)
     level 3 - debug messages (adds input trace, text format field adjustments)
     level 4 - debug messages (adds system.properties display)

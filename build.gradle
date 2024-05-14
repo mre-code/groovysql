@@ -21,8 +21,8 @@ group = 'net.venturechain.database'
 repositories {
     mavenCentral()
     flatDir {
-        dirs '/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x',
-                '/app/d7/lib/extensions/jdbc-drivers/vdp-7.0'
+        dirs '/app/d8/lib/extensions/jdbc-drivers/snowflake-1.x',
+                '/app/d8/lib/extensions/jdbc-drivers/vdp-8.0'
     }
 }
 
@@ -41,7 +41,7 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-core:2.23.1'
     implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.23.1'
     implementation 'org.postgresql:postgresql:42.7.3'
-    implementation name: 'snowflake-jdbc-3.6.28'
+    implementation name: 'snowflake-jdbc'
     implementation name: 'denodo-vdp-jdbcdriver'
 
     // used by gradle (only) to integrate with maven
