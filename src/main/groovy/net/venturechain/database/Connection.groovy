@@ -130,6 +130,7 @@ class Connection {
 
         switch (m_dbScheme) {
             case "vdb":
+            case "denodo":
                 m_dbClass = "com.denodo.vdp.jdbc.Driver"
                 m_dbOptions = m_dbOptions ?:
                         "reuseRegistrySocket=true" +                    // for load balancer set to false
@@ -157,7 +158,7 @@ class Connection {
                 m_dbClass = "org.postgresql.Driver"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 var driver = new org.postgresql.Driver()
-                m_dbDriverVersion = "Postgres JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
+                m_dbDriverVersion = "Postgres JDBC ${driver.getJDBCMajorVersion()}.${driver.getJDBCMinorVersion()}"
                 break
             default:
                 errorExit("dbscheme not recognized (${m_dbScheme})")
@@ -398,6 +399,10 @@ class Connection {
             case ".width":
                 m_width = tokens[1] as Integer
                 displayOutput(1, "width set to: $m_width")
+                break
+            case ".remove":
+                new File(tokens[1] as String).delete()
+                displayOutput(1, "removed file: ${tokens[1]}")
                 break
             default:
                 errorExit("unrecognized command input: $command")

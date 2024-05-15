@@ -79,7 +79,7 @@ VERBOSE=0
 PROJECTBASE=$HOME/dox/repos/groovysql
 GROOVYBASE=$PROJECTBASE/src/main/groovy
 TESTBASE=$PROJECTBASE/tests
-RUNFORMAT=groovy
+RUNFORMAT=groovy8
 GROOVY_HOME=/usr/local/sdkman/candidates/groovy/current
 PATH=$GROOVY_HOME/bin:$PATH
 
@@ -113,26 +113,46 @@ done
 shift $(( OPTIND - 1 ))
 
 case $RUNFORMAT in
-groovysql)
+groovysql7)
         EXEC=""
-        GROOVYSQL=groovysql 
+        GROOVYSQL=groovysql7
+        type $GROOVYSQL
+        ;;
+groovysql8)
+        EXEC=""
+        GROOVYSQL=groovysql8
         type $GROOVYSQL
         ;;
 jar)
         EXEC="java -jar" 
-        GROOVYSQL=$PROJECTBASE/app/build/libs/app-2.2-all.jar
+        GROOVYSQL=$PROJECTBASE/build/libs/groovysql-2.3-all.jar
         ;;
-groovy)
+groovy7)
         EXEC="groovy"
         GROOVYSQL=net/venturechain/database/GroovySQL.groovy
         export CLASSPATH
-        CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc-3.6.28.jar
+        CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc.jar
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
         CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
         CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
         CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
         CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
+	;;
+groovy8)
+        EXEC="groovy"
+        GROOVYSQL=net/venturechain/database/GroovySQL.groovy
+        export CLASSPATH
+        CLASSPATH+=:/app/d8/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc.jar
+        CLASSPATH+=:/app/d8/lib/extensions/jdbc-drivers/vdp-8.0/denodo-vdp-jdbcdriver.jar
+        CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
+        CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
+        CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
+        CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
         ;;
+*)
+	echo "unrecognized runformat"
+	exit 255
+	;;
 esac
 
 case $ACTION in
@@ -221,7 +241,7 @@ Extended option enables some debugging output.
 
 Specifies a runformat of "groovy", "jar", or "groovysql".
 Specifying "groovy" results in running groovy with the generated class files (groovy GroovySQL.groovy),
-specifying "jar" results in running java with the generated jar file (java -jar app.jar),
+specifying "jar" results in running java with the generated jar file (java -jar groovysql.jar),
 and specifying "groovysql" results in running the generated jar file (groovysql).
 
 =item -v level
