@@ -48,16 +48,19 @@ class GroovySQL {
         }
 
         if (options.fileout) {
-            if (new File(options.fileout).exists() and !options.append) {
-                errorExit("file $options.fileout already exists")
-            } else {
-                try {
+            try {
+                if (new File(options.fileout).exists()) {
+                    if (!options.append) {
+                        errorExit("output file '$options.fileout' already exists")
+                    } else if (!new File(options.fileout).canWrite()) {
+                        errorExit("no write access to output file '$options.fileout'")
+                    }
+                } else {
                     var outFile = new File(options.fileout)
-                    outFile.delete()
                     outFile.createNewFile()
-                } catch (exception) {
-                    errorExit("$exception (${options.fileout})")
                 }
+            } catch (exception) {
+                errorExit("$exception (${options.fileout})")
             }
         }
 
