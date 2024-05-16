@@ -1,75 +1,62 @@
 # GroovySQL - Groovy SQL Client
 
-GroovySQL is a database client designed primarily for batch SQL submission. It
-is written in Groovy, which compiles to Java, and is compatible with
-vendor-provided Java database drivers. In particular, it works with the Denodo
-JDBC virtual database driver for Denodo version 7 and 8. It has also been tested
-with the Snowflake JDBC driver as well as the Postgres JDBC driver. Support for
-other Java-based database drivers can be added though adding additional database
+GroovySQL is a database client designed primarily for batch SQL submission. It is written in Groovy, which compiles to
+Java, and is compatible with vendor-provided Java database drivers. In particular, it works with the Denodo JDBC virtual
+database driver for Denodo version 7 and 8. It has also been tested with the Snowflake JDBC driver as well as the
+Postgres JDBC driver. Support for other Java-based database drivers can be added though adding additional database
 driver support requires some minor changes and rebuilding GroovySQL.
 
-The Denodo Data Virtualization product does not come with a command line
-interface (CLI) and is typically accessed through tools like DBeaver
-interactively and Java applications or EAI tools like DataBricks for application
-service. GroovySQL provides a CLI for use from shell batch implementations.
+The Denodo Data Virtualization product does not come with a command line interface (CLI) and is typically accessed
+through tools like DBeaver interactively and Java applications or EAI tools like DataBricks for application service.
+GroovySQL provides a CLI for use from shell batch implementations.
 
-GroovySQL takes input from any one of standard input, command line, or file. SQL
-statements normally must be terminated with a semicolon although for
-command-line input the semicolon is optional. In addition to standard input, for
-example redirected from a file or pipe, GroovySQL also provides an interactive
-mode with command line editing and history leveraging the
+GroovySQL takes input from any one of standard input, command line, or file. SQL statements normally must be terminated
+with a semicolon although for command-line input the semicolon is optional. In addition to standard input, for example
+redirected from a file or pipe, GroovySQL also provides an interactive mode with command line editing and history
+leveraging the
 [jline3 library](https://jline.github.io/).
 
 ## Deploying GroovySQL
 
-The simplest approach to deploying GroovySQL is to download the latest jar file
-from the Releases and place it in your execution path ($PATH). When deployed as
-an executable jar (recommended), GroovySQL does not require anything to be
-installed other than Java. All other requirements are self-contained in the
-GroovySQL jar file. In particular there is no requirement to install Groovy or
-any database drivers, GroovySQL will locate all those artifacts in its jar file
-at runtime. The jar file is not extracted or installed anywhere.
+The simplest approach to deploying GroovySQL is to download the latest jar file from the Releases and place it in your
+execution path ($PATH). When deployed as an executable jar (recommended), GroovySQL does not require anything to be
+installed other than Java. All other requirements are self-contained in the GroovySQL jar file. In particular there is
+no requirement to install Groovy or any database drivers, GroovySQL will locate all those artifacts in its jar file at
+runtime. The jar file is not extracted or installed anywhere.
 
 ## Building GroovySQL
 
-In the event that you need to make changes to GroovySQL, for example to add
-support for a new database driver, GroovySQL is built using Gradle and can be
-built following these steps:
+In the event that you need to make changes to GroovySQL, for example to add support for a new database driver, GroovySQL
+is built using Gradle and can be built following these steps:
 
 1. Clone the GroovySQL repository to your machine via the usual Git methods
 2. Change directory into the cloned repo (cd groovysql)
 3. Execute the Gradle wrapper (./gradlew shadowJar)
 
-The Gradle wrapper (gradlew) will take care of downloading and installing the
-right version of Gradle, compiling everything, and putting together the final
-jar file as ./build/libs/groovysql-x.y-all.jar, where x.y represents the current
-version of GroovySQL.
+The Gradle wrapper (gradlew) will take care of downloading and installing the right version of Gradle, compiling
+everything, and putting together the final jar file as ./build/libs/groovysql-x.y-all.jar, where x.y represents the
+current version of GroovySQL.
 
 ## Running GroovySQL
 
-GroovySQL, like any Java program, can be run in one of two ways. Either the
-single groovysql.jar file needs to be placed somewhere in the filesystem, e.g.
-/usr/local/lib/groovysql.jar, and then GroovySQL can be run via Java jar
-execution:
+GroovySQL, like any Java program, can be run in one of two ways. Either the single groovysql.jar file needs to be placed
+somewhere in the filesystem, e.g. /usr/local/lib/groovysql.jar, and then GroovySQL can be run via Java jar execution:
 
 ```
 java -jar /usr/local/lib/groovysql.jar <options>
 ```
 
-Or the jar file can be placed in the filesystem in the execution path (PATH),
-made executable, and renamed as groovysql, in which case it can be executed as a
-traditional command:
+Or the jar file can be placed in the filesystem in the execution path (PATH), made executable, and renamed as groovysql,
+in which case it can be executed as a traditional command:
 
 ```
 groovysql <options>
 ```
 
-Note: In the Releases there are two jar files, groovysql7 and groovysql8. The
-difference is with respect to Denodo support - groovysql7 supports Denodo 7 and
-groovysql8 supports Denodo 8. This is due to driver incompatibilities between 7
-and 8. If you are only interested in one of the versions then that jar file can
-be installed with or without the '7' or '8' suffix. The Snowflake and Postgres
-support is not affected by this driver issue, either jar file will work for
+Note: In the Releases there are two jar files, groovysql7 and groovysql8. The difference is with respect to Denodo
+support - groovysql7 supports Denodo 7 and groovysql8 supports Denodo 8. This is due to driver incompatibilities between
+7 and 8. If you are only interested in one of the versions then that jar file can be installed with or without the '7'
+or '8' suffix. The Snowflake and Postgres support is not affected by this driver issue, either jar file will work for
 those databases.
 
 ### Additional package support
@@ -82,11 +69,10 @@ sudo apt install binfmt-support
 sudo apt install jarwrapper
 ```
 
-After installing the packages, the `binfmts-support --display` command will
-display the configuration. Other options allow updating the configuration if
-necessary. This [binfmt web page](https://binfmt-support.nongnu.org/) provides
-some information about the package. There is also the update-binfmts(8) man page
-reference that goes into detail about managing and displaying the configuration.
+After installing the packages, the `binfmts-support --display` command will display the configuration. Other options
+allow updating the configuration if necessary. This [binfmt web page](https://binfmt-support.nongnu.org/) provides some
+information about the package. There is also the update-binfmts(8) man page reference that goes into detail about
+managing and displaying the configuration.
 
 ## GroovySQL output formats
 
@@ -98,25 +84,20 @@ Output formats supported are:
     xml
     json
 
-The `--width` option limits the maximum column width for columns in text mode.
-GroovySQL manages text mode output while industry standard packages handle
-output formatting for all the other output formats. The `--jsonstyle` option
-allows selecting between all keys and values being quoted (the default) or all
-keys and string values being quoted (with numeric values unquoted) as JSON
-allows both approaches.
+The `--width` option limits the maximum column width for columns in text mode. GroovySQL manages text mode output while
+industry standard packages handle output formatting for all the other output formats. The `--jsonstyle` option allows
+selecting between all keys and values being quoted (the default) or all keys and string values being quoted (with
+numeric values unquoted) as JSON allows both approaches.
 
-GroovySQL is designed for use in production batch operations and is careful to
-avoid overwriting any existing files and will abort in the event of a conflict
-unless the _append_ option is in effect in which case it will append the output
-to an existing file. Following this approach GroovySQL will not result in data
-loss though data loss can still occur through other mechanisms, e.g. file
-redirection, etc.
+GroovySQL is designed for use in production batch operations and is careful to avoid overwriting any existing files and
+will abort in the event of a conflict unless the _append_ option is in effect in which case it will append the output to
+an existing file. Following this approach GroovySQL will not result in data loss though data loss can still occur
+through other mechanisms, e.g. file redirection, etc.
 
-GroovySQL supports various JSON styles - "quoted", "standard", and "spread". The
-default is _quoted_ and results in all values being quoted while _standard_ does
-not quote integer and floating point numeric values. The _spread_ style is a
-variant of standard that uses the Groovy spread operator to produce the same
-output as _standard_. JSON keys are always quoted in line with JSON "standards".
+GroovySQL supports various JSON styles - "quoted", "standard", and "spread". The default is _quoted_ and results in all
+values being quoted while _standard_ does not quote integer and floating point numeric values. The _spread_ style is a
+variant of standard that uses the Groovy spread operator to produce the same output as _standard_. JSON keys are always
+quoted in line with JSON "standards".
 
 ## Command Line Options
 
@@ -124,10 +105,9 @@ output as _standard_. JSON keys are always quoted in line with JSON "standards".
 
 Either the short or long option can be used, with the < arg> supplied as needed.
 
-The --config option allows the database connection information to be stored in a
-configuration file and supplied as a single option for convenience. It is
-shorthand for specifying the --scheme, --node, --database, --user, and
---password options.
+The --config option allows the database connection information to be stored in a configuration file and supplied as a
+single option for convenience. It is shorthand for specifying the --scheme, --node, --database, --user, and --password
+options.
 
 | short | long option          | description                                                       |
 |:-----:|----------------------|-------------------------------------------------------------------|
@@ -152,21 +132,20 @@ shorthand for specifying the --scheme, --node, --database, --user, and
 
 ## Usage
 
-GroovySQL reads SQL input, submits SQL statements to a connected database, and
-formats the results in one of the output formats selected.
+GroovySQL reads SQL input, submits SQL statements to a connected database, and formats the results in one of the output
+formats selected.
 
 The SQL input can come from a disk file, the command line through the `--sql`
 option, or from standard input (keyboard or pipe).
 
-In addition to standard input, GroovySQL also supports an interactive line
-editing mode with retained history using
+In addition to standard input, GroovySQL also supports an interactive line editing mode with retained history using
 the [jline3 library](https://jline.github.io/). History is kept in
 `$HOME/.groovysql_history`.
 
 ### Control record directives
 
-GroovySQL also supports a control record capability. Control records allow
-directives to be processed during the SQL processing.
+GroovySQL also supports a control record capability. Control records allow directives to be processed during the SQL
+processing.
 
 Directives supported are:
 
@@ -177,14 +156,12 @@ Directives supported are:
     .append <true/false>
     .width <max text column width>
 
-The directives allow various settings to be specified in the SQL input. For
-example the output file name can be changed between SQL statements, the maximum
-column width for text output can be changed, etc.
+The directives allow various settings to be specified in the SQL input. For example the output file name can be changed
+between SQL statements, the maximum column width for text output can be changed, etc.
 
 ### Verbose levels
 
-GroovySQL supports various verbose levels as well as a timestamp option for
-runtime operational feedback.
+GroovySQL supports various verbose levels as well as a timestamp option for runtime operational feedback.
 
     level 0 - no messages (except data of course) 
     level 1 - basic messages (version info, open/close - default)
@@ -192,15 +169,13 @@ runtime operational feedback.
     level 3 - debug messages (adds input trace, text format field adjustments)
     level 4 - debug messages (adds system.properties display)
 
-While level 1 is the default, setting, --verbose=0 allows GroovySQL to be used
-in pipelines. For example, piping output
+While level 1 is the default, setting, --verbose=0 allows GroovySQL to be used in pipelines. For example, piping output
 to [xmlstarlet(1)](https://xmlstar.sourceforge.net/doc/UG/xmlstarlet-ug.html)
 or [jq(1)](https://jqlang.github.io/jq/manual/) for postprocessing.
 
 ### Config file format
 
-Config files are optional files containing all the database connection
-parameters for a given database. They are written
+Config files are optional files containing all the database connection parameters for a given database. They are written
 in [TOML format](https://toml.io/en/) and support the following parameters:
 
     dbUser      - the database username
@@ -216,14 +191,11 @@ in [TOML format](https://toml.io/en/) and support the following parameters:
 
 ### Test Connection Capability
 
-Additionally, GroovySQL has a connection testing capability. With
-the `--testconnect <arg>` option GroovySQL will open a database connection,
-submit a simple query, read the results, discard the results, and close the
-connection a requested number of times, pausing between each connection for a
-requested interval. The `--testconnect` argument is of the form 'N@W' where N
-represents the number of connection iterations and W represents the wait
-interval between connections measured in seconds. If the interval is not
-specified it defaults to 1 second. This feature is sometimes useful in
+Additionally, GroovySQL has a connection testing capability. With the `--testconnect <arg>` option GroovySQL will open a
+database connection, submit a simple query, read the results, discard the results, and close the connection a requested
+number of times, pausing between each connection for a requested interval. The `--testconnect` argument is of the form '
+N@W' where N represents the number of connection iterations and W represents the wait interval between connections
+measured in seconds. If the interval is not specified it defaults to 1 second. This feature is sometimes useful in
 diagnosing/investigating intermittent database connectivity issues, e.g.,
 `--testconnect 2880@60` would run over a weekend checking once a minute.
 
@@ -238,9 +210,8 @@ File: itemdb.config
     dbName = "itemdb"
     dbClass = "com.denodo.vdp.jdbc.Driver"
 
-Specifying the dbClass in the config file is optional. GroovySQL uses a default
-dbClass based on the vdb option but if a dbClass is provided then it will
-override the default.
+Specifying the dbClass in the config file is optional. GroovySQL uses a default dbClass based on the vdb option but if a
+dbClass is provided then it will override the default.
 
 File: item-extract.sql
 
@@ -249,8 +220,7 @@ File: item-extract.sql
     .output ../extract/items.json
     SELECT * FROM ITEM;
 
-Executing **item-extract.sql** with directives controlling output format and
-location
+Executing **item-extract.sql** with directives controlling output format and location
 
 `groovysql --config=itemdb.config --filein=item-extract.sql`
 
@@ -284,8 +254,7 @@ File: txn_audit.sql
     ;
 ```
 
-Executing txn_audit.sql to produce txn_audit.xml in XML format (shown using
-short options and without `--config` option)
+Executing txn_audit.sql to produce txn_audit.xml in XML format (shown using short options and without `--config` option)
 
 ```
 $ groovysql -s vdb -n dbhost.mydomain.com:9999 -d itemdb -u appuser -p appword -f txn_audit.sql -o txn_audit.xml -F xml
@@ -385,8 +354,7 @@ Sample execution without results (CREATE/INSERT/DELETE/UPDATE)
 
     updated rowcount: 0
 
-Sample execution of Denodo CREATE REMOTE TABLE
-with [jq(1)](https://jqlang.github.io/jq/manual/) postprocessing
+Sample execution of Denodo CREATE REMOTE TABLE with [jq(1)](https://jqlang.github.io/jq/manual/) postprocessing
 
     $ cat <<EOF | groovysql --config=itemdb.config -v0 -F json | jq '.rows[]."stored procedure result"'
         SELECT *
