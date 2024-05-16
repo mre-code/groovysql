@@ -158,14 +158,14 @@ class Connection {
                 m_dbClass = "org.postgresql.Driver"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 var driver = new org.postgresql.Driver()
-                m_dbDriverVersion = "Postgres JDBC ${driver.getJDBCMajorVersion()}.${driver.getJDBCMinorVersion()}"
+                m_dbDriverVersion = "Postgres JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
                 break
             default:
                 errorExit("dbscheme not recognized (${m_dbScheme})")
         }
 
-        if (m_verbose >= 1) {
-            displayOutput(1,"GroovySQL 2.3 powered by Groovy ${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
+        if (Math.abs(m_verbose) >= 1) {
+            displayOutput(1,"GroovySQL 2.4 powered by Groovy ${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
         }
 
         m_connectionParameters = [

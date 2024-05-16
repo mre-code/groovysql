@@ -63,17 +63,18 @@ traditional command:
 ```
 groovysql <options>
 ```
-Note: In the Releases there are two jar files, groovysql7 and groovysql8. 
-The difference is with respect to Denodo support - groovysql7 supports 
-Denodo 7 and groovysql8 supports Denodo 8.  This is due to driver 
-incompatibilities between 7 and 8.  If you are only interested in one of the 
-versions then that jar file can be installed with or without the '7' or '8' 
-suffix. The Snowflake and Postgres support is not affected by this driver 
-issue, either jar file will work for those databases.
+
+Note: In the Releases there are two jar files, groovysql7 and groovysql8. The
+difference is with respect to Denodo support - groovysql7 supports Denodo 7 and
+groovysql8 supports Denodo 8. This is due to driver incompatibilities between 7
+and 8. If you are only interested in one of the versions then that jar file can
+be installed with or without the '7' or '8' suffix. The Snowflake and Postgres
+support is not affected by this driver issue, either jar file will work for
+those databases.
 
 ### Additional package support
 
-That second (optional) execution approach above often requires the 
+That second (optional) execution approach above often requires the
 `binfmts-support` and `jarwrapper` packages. To install these packages:
 
 ```
@@ -97,11 +98,11 @@ Output formats supported are:
     xml
     json
 
-The `--width` option limits the maximum column width for columns in text mode. 
-GroovySQL manages text mode output while industry standard packages handle 
-output formatting for all the other output formats.  The `--jsonstyle` option 
-allows selecting between all keys and values being quoted (the default) or 
-all keys and string values being quoted (with numeric values unquoted) as JSON 
+The `--width` option limits the maximum column width for columns in text mode.
+GroovySQL manages text mode output while industry standard packages handle
+output formatting for all the other output formats. The `--jsonstyle` option
+allows selecting between all keys and values being quoted (the default) or all
+keys and string values being quoted (with numeric values unquoted) as JSON
 allows both approaches.
 
 GroovySQL is designed for use in production batch operations and is careful to
@@ -121,12 +122,11 @@ output as _standard_. JSON keys are always quoted in line with JSON "standards".
 
 **groovysql [options]**
 
-Either the short or long option can be used, with the < arg> supplied as 
-needed.
+Either the short or long option can be used, with the < arg> supplied as needed.
 
-The --config option allows the database connection information to be stored 
-in a configuration file and supplied as a single option for convenience.  It 
-is shorthand for specifying the --scheme, --node, --database, --user, and 
+The --config option allows the database connection information to be stored in a
+configuration file and supplied as a single option for convenience. It is
+shorthand for specifying the --scheme, --node, --database, --user, and
 --password options.
 
 | short | long option          | description                                                       |
@@ -142,7 +142,7 @@ is shorthand for specifying the --scheme, --node, --database, --user, and
 |  -n   | --node \<arg>        | specify database node/host name including port                    |
 |  -o   | --fileout \<arg>     | specify output filename                                           |
 |  -p   | --password \<arg>    | specify database password                                         |
-|  -s   | --scheme \<arg>      | database scheme, "vdb", "denodo", "snowflake", or "postgres"      |
+|  -s   | --scheme \<arg>      | database scheme, "vdb", "denodo", "snowflake", or "postgresql"    |
 |  -S   | --sql \<arg>         | specify SQL statement                                             |
 |  -t   | --timestamps         | timestamp output                                                  |
 |  -T   | --testconnect \<arg> | run a connection test, arg is N@W, N connections with W sec delay |
@@ -177,9 +177,9 @@ Directives supported are:
     .append <true/false>
     .width <max text column width>
 
-The directives allow various settings to be specified in the SQL input. For 
-example the output file name can be changed between SQL statements, the 
-maximum column width for text output can be changed, etc.
+The directives allow various settings to be specified in the SQL input. For
+example the output file name can be changed between SQL statements, the maximum
+column width for text output can be changed, etc.
 
 ### Verbose levels
 
@@ -192,9 +192,10 @@ runtime operational feedback.
     level 3 - debug messages (adds input trace, text format field adjustments)
     level 4 - debug messages (adds system.properties display)
 
-While level 1 is the default, setting, --verbose=0 allows GroovySQL to be 
-used in pipelines. For example, piping output to xmlstarlet(1) or jq(1) for
-postprocessing.
+While level 1 is the default, setting, --verbose=0 allows GroovySQL to be used
+in pipelines. For example, piping output
+to [xmlstarlet(1)](https://xmlstar.sourceforge.net/doc/UG/xmlstarlet-ug.html)
+or [jq(1)](https://jqlang.github.io/jq/manual/) for postprocessing.
 
 ### Config file format
 
@@ -204,26 +205,26 @@ in [TOML format](https://toml.io/en/) and support the following parameters:
 
     dbUser      - the database username
     dbPassword  - the database password
-    dbScheme    - the JDBC scheme (vdb::Denodo, denodo::Denodo snowflake::Snowflake, postgres::Postgres)
+    dbScheme    - the JDBC scheme (vdb::Denodo, denodo::Denodo, snowflake::Snowflake, postgresql::Postgres)
     dbHost      - the TCP network address (hostname:port)
     dbName      - the database name
     dbClass     - the database driver class name (optional, defaults based on dbScheme) 
                     vdb defaults to com.denodo.vdp.jdbc.Driver
                     denodo defaults to com.denodo.vdp.jdbc.Driver
                     snowflake defaults to net.snowflake.client.jdbc.SnowflakeDriver
-                    postgres defaults to org.postgres.Driver
+                    postgresql defaults to org.postgres.Driver
 
 ### Test Connection Capability
 
 Additionally, GroovySQL has a connection testing capability. With
-the `--testconnect <arg>` option GroovySQL will open a database connection, 
-submit a simple query, read the results, discard the results, and close the 
-connection a requested number of times, pausing between each connection for 
-a requested interval. The `--testconnect` argument is of the form 'N@W' 
-where N represents the number of connection iterations and W represents the 
-wait interval between connections measured in seconds. If the interval is 
-not specified it defaults to 1 second. This feature is sometimes useful in 
-diagnosing/investigating intermittent database connectivity issues, e.g., 
+the `--testconnect <arg>` option GroovySQL will open a database connection,
+submit a simple query, read the results, discard the results, and close the
+connection a requested number of times, pausing between each connection for a
+requested interval. The `--testconnect` argument is of the form 'N@W' where N
+represents the number of connection iterations and W represents the wait
+interval between connections measured in seconds. If the interval is not
+specified it defaults to 1 second. This feature is sometimes useful in
+diagnosing/investigating intermittent database connectivity issues, e.g.,
 `--testconnect 2880@60` would run over a weekend checking once a minute.
 
 ## Examples
@@ -383,3 +384,25 @@ Sample execution without results (CREATE/INSERT/DELETE/UPDATE)
     $ groovysql --config=itemdb.config --sql "DELETE FROM ITEM WHERE ITEM_ID IS NULL"
 
     updated rowcount: 0
+
+Sample execution of Denodo CREATE REMOTE TABLE
+with [jq(1)](https://jqlang.github.io/jq/manual/) postprocessing
+
+    $ cat <<EOF | groovysql --config=itemdb.config -v0 -F json | jq '.rows[]."stored procedure result"'
+        SELECT *
+        FROM CREATE_REMOTE_TABLE()
+        WHERE remote_table_name = 'SURVEY_TARGET'
+        AND replace_base_view_if_exist = TRUE
+        AND replace_remote_table_if_exist = TRUE
+        AND datasource_database_name = 'venture3'
+        AND datasource_name = 'venture3_ds'
+        AND datasource_catalog = 'venture3'
+        AND datasource_schema = 'public'
+        AND base_view_database_name = 'venture3'
+        AND base_view_name = 'SURVEY_TARGET'
+        AND base_view_folder = '/base views'
+        AND query = 'SELECT * FROM VENTURE3.RAW_SURVEY_DATA';
+        EOF
+    "Step 1 of 3: Created remote table 'survey_target' successfully."
+    "Step 2 of 3: Inserted 2 rows into remote table 'survey_target'."
+    "Step 3 of 3: Created base view 'SURVEY_TARGET' successfully in the 'venture3' database."

@@ -11,7 +11,7 @@ function run_file_tests() {
         echo "... $EXEC $GROOVYSQL"
 
         $EXEC $GROOVYSQL                                          \
-             --config  $TESTBASE/venture1.config                  \
+             --config  $TESTBASE/$DBCONFIG                        \
              --filein  $TESTBASE/sqltest.$TESTNAME                \
              --fileout $TESTBASE/results-$TESTNAME.$FORMAT        \
              --format $FORMAT                                     \
@@ -29,7 +29,7 @@ function run_cmdline_test() {
     SQL=$(cat $TESTBASE/test.cmdline)
 
     $EXEC $GROOVYSQL                                         \
-        --config  $TESTBASE/venture1.config                  \
+        --config  $TESTBASE/$DBCONFIG                        \
         --sql "$SQL"                                         \
         --format $FORMAT                                     \
         --verbose $VERBOSE                                   \
@@ -44,7 +44,7 @@ function run_stdio_test() {
 
     cat $TESTBASE/test.stdio |
     $EXEC $GROOVYSQL                                         \
-        --config  $TESTBASE/venture1.config                  \
+        --config  $TESTBASE/$DBCONFIG                        \
         --format $FORMAT                                     \
         --verbose $VERBOSE                                   \
         $OPTIONS
@@ -56,7 +56,7 @@ function run_interactive_test() {
     echo "... $EXEC $GROOVYSQL"
 
     $EXEC $GROOVYSQL                                         \
-        --config  $TESTBASE/venture1.config                  \
+        --config  $TESTBASE/$DBCONFIG                        \
         --verbose $VERBOSE                                   \
         --interactive                                        \
         $OPTIONS
@@ -68,7 +68,7 @@ function run_connection_test() {
     echo "... $EXEC $GROOVYSQL"
 
     $EXEC $GROOVYSQL                                         \
-        --config  $TESTBASE/venture1.config                  \
+        --config  $TESTBASE/$DBCONFIG                        \
         --testconnect $FREQUENCY                             \
         $OPTIONS
 
@@ -79,6 +79,7 @@ VERBOSE=0
 PROJECTBASE=$HOME/dox/repos/groovysql
 GROOVYBASE=$PROJECTBASE/src/main/groovy
 TESTBASE=$PROJECTBASE/tests
+DBCONFIG=venture1.config
 RUNFORMAT=groovy8
 GROOVY_HOME=/usr/local/sdkman/candidates/groovy/current
 PATH=$GROOVY_HOME/bin:$PATH
@@ -94,7 +95,7 @@ cd $GROOVYBASE || exit
 
 function usage() { pod2usage -verbose 0 $MYNAME ; exit 1 ; }
 
-while getopts :r:iFCST:hO:v: OPT
+while getopts :r:iFCST:hO:v:c: OPT
 do
         case "$OPT" in
         F)      ACTION=run_file_tests ;;
@@ -102,6 +103,7 @@ do
         S)      ACTION=run_stdio_test ;;
         T)      ACTION=run_connection_test ; FREQUENCY=$OPTARG ;;
         i)      ACTION=run_interactive_test ;;
+        c)      DBCONFIG=$OPTARG ;;
         r)      RUNFORMAT=$OPTARG ;;
         O)      OPTIONS+=" --$OPTARG" ;;
         v)      VERBOSE=$OPTARG ;;
