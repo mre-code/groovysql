@@ -160,6 +160,12 @@ class Connection {
                 var driver = new org.postgresql.Driver()
                 m_dbDriverVersion = "Postgres JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
                 break
+            case "mysql":
+                m_dbClass = "com.mysql.cj.jdbc.Driver"
+                m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
+                var driver = new com.mysql.cj.jdbc.Driver()
+                m_dbDriverVersion = "MySQL JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
+                break
             default:
                 errorExit("dbscheme not recognized (${m_dbScheme})")
         }
