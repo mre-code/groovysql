@@ -2,9 +2,9 @@
 
 GroovySQL is a database client designed primarily for batch SQL submission. It is written in Groovy, which compiles to
 Java, and is compatible with vendor-provided Java database drivers. In particular, it works with the Denodo JDBC virtual
-database driver for Denodo version 7 and 8. It has also been tested with the Snowflake JDBC driver as well as the
-Postgres JDBC driver. Support for other Java-based database drivers can be added though adding additional database
-driver support requires some minor changes and rebuilding GroovySQL.
+database driver for Denodo version 7 and 8. It has also been tested with the Snowflake JDBC driver, the Postgres 
+JDBC driver and the MySQL JDBC driver. Support for other Java-based database drivers can be added though 
+adding additional database driver support requires some minor changes and rebuilding GroovySQL.
 
 The Denodo Data Virtualization product does not come with a command line interface (CLI) and is typically accessed
 through tools like DBeaver interactively and Java applications or EAI tools like DataBricks for application service.
@@ -56,8 +56,9 @@ groovysql <options>
 Note: In the Releases there are two jar files, groovysql7 and groovysql8. The difference is with respect to Denodo
 support - groovysql7 supports Denodo 7 and groovysql8 supports Denodo 8. This is due to driver incompatibilities between
 7 and 8. If you are only interested in one of the versions then that jar file can be installed with or without the '7'
-or '8' suffix. The Snowflake and Postgres support is not affected by this driver issue, either jar file will work for
-those databases.
+or '8' suffix. The Snowflake, Postgres, or MySQL support is not affected by this driver issue, either jar file will 
+work for those databases though the latest Snowflake driver (which is in groovysql8) has compatibility issues with 
+later versions of Java so groovysql7 might be a better choice.
 
 ### Additional package support
 
@@ -109,26 +110,26 @@ The --config option allows the database connection information to be stored in a
 single option for convenience. It is shorthand for specifying the --scheme, --node, --database, --user, and --password
 options.
 
-| short | long option          | description                                                       |
-|:-----:|----------------------|-------------------------------------------------------------------|
-|  -a   | --append             | allows output to append to an existing file                       |
-|  -c   | --config \<arg>      | specifies a database configuration file                           |
-|  -d   | --database \<arg>    | specify database name                                             |
-|  -f   | --filein \<arg>      | specifies input filename containing SQL                           |
-|  -F   | --format \<arg>      | specify desired output format                                     |
-|  -h   | --help               | displays this usage information                                   |
-|  -i   | --interactive        | run in interactive mode with editing/history                      |
-|  -j   | --jsonstyle          | specify JSON style of quoted or standard                          |
-|  -n   | --node \<arg>        | specify database node/host name including port                    |
-|  -o   | --fileout \<arg>     | specify output filename                                           |
-|  -p   | --password \<arg>    | specify database password                                         |
-|  -s   | --scheme \<arg>      | database scheme, "vdb", "denodo", "snowflake", or "postgresql"    |
-|  -S   | --sql \<arg>         | specify SQL statement                                             |
-|  -t   | --timestamps         | timestamp output                                                  |
-|  -T   | --testconnect \<arg> | run a connection test, arg is N@W, N connections with W sec delay |
-|  -u   | --user \<arg>        | specify database username                                         |
-|  -v   | --verbose \<arg>     | specify verbose level                                             |
-|  -w   | --width \<arg>       | limit maximum text column width                                   |
+| short | long option          | description                                                             |
+|:-----:|----------------------|-------------------------------------------------------------------------|
+|  -a   | --append             | allows output to append to an existing file                             |
+|  -c   | --config \<arg>      | specifies a database configuration file                                 |
+|  -d   | --database \<arg>    | specify database name                                                   |
+|  -f   | --filein \<arg>      | specifies input filename containing SQL                                 |
+|  -F   | --format \<arg>      | specify desired output format                                           |
+|  -h   | --help               | displays this usage information                                         |
+|  -i   | --interactive        | run in interactive mode with editing/history                            |
+|  -j   | --jsonstyle          | specify JSON style of quoted or standard                                |
+|  -n   | --node \<arg>        | specify database node/host name including port                          |
+|  -o   | --fileout \<arg>     | specify output filename                                                 |
+|  -p   | --password \<arg>    | specify database password                                               |
+|  -s   | --scheme \<arg>      | database scheme, "vdb", "denodo", "snowflake", "postgresql", or "mysql" |
+|  -S   | --sql \<arg>         | specify SQL statement                                                   |
+|  -t   | --timestamps         | timestamp output                                                        |
+|  -T   | --testconnect \<arg> | run a connection test, arg is N@W, N connections with W sec delay       |
+|  -u   | --user \<arg>        | specify database username                                               |
+|  -v   | --verbose \<arg>     | specify verbose level                                                   |
+|  -w   | --width \<arg>       | limit maximum text column width                                         |
 
 ## Usage
 
@@ -188,6 +189,7 @@ in [TOML format](https://toml.io/en/) and support the following parameters:
                     denodo defaults to com.denodo.vdp.jdbc.Driver
                     snowflake defaults to net.snowflake.client.jdbc.SnowflakeDriver
                     postgresql defaults to org.postgres.Driver
+                    mysql defaults to com.mysql.cj.jdbc.Driver
 
 ### Test Connection Capability
 
