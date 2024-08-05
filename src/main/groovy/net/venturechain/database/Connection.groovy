@@ -147,8 +147,7 @@ class Connection {
             case "snowflake":
                 m_dbClass = "net.snowflake.client.jdbc.SnowflakeDriver"
                 m_dbName = "?db=${m_dbName}"
-                m_dbOptions = m_dbOptions ?:
-                        "queryTimeout=0"
+                m_dbOptions = m_dbOptions ?: "queryTimeout=0"
                 m_dbOptions = "&" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 m_dbDriverVersion = "Snowflake JDBC " +
@@ -166,12 +165,19 @@ class Connection {
                 var driver = new com.mysql.cj.jdbc.Driver()
                 m_dbDriverVersion = "MySQL JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
                 break
+            case "sqlite":
+                m_dbClass = "org.sqlite.JDBC"
+                m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
+                var driver = new org.sqlite.JDBC()
+                m_dbDriverVersion = "SQLite3 JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
+                break
             default:
                 errorExit("dbscheme not recognized (${m_dbScheme})")
         }
 
         if (Math.abs(m_verbose) >= 1) {
-            displayOutput(1,"GroovySQL 2.4 powered by Groovy ${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
+            displayOutput(1, "GroovySQL 2.6 powered by Groovy ${GroovySystem.version}/${Runtime.version()} with " +
+                    "${m_dbDriverVersion}")
         }
 
         m_connectionParameters = [
@@ -226,7 +232,7 @@ class Connection {
             closeConnection()
             if (iteration < iterations) {
                 displayOutput(1, "waiting ${interval} sec")
-                Thread.sleep(interval*1000)
+                Thread.sleep(interval * 1000)
             }
         }
     }
@@ -265,7 +271,8 @@ class Connection {
                         writer.printf("%-${colWidths[columnIndex]}.${m_width}s ", " ")
                     } else {
                         formatString = switch (colTypes[columnIndex]) {
-                            case -6..-5 -> "%${colWidths[columnIndex]}d "             // tinyint, bigint
+                            case -6 -> "%${colWidths[columnIndex]}d "                 // tinyint
+                            case -5 -> "%${colWidths[columnIndex]}.0f "               // bigint
                             case 2 -> "%${colWidths[columnIndex]}.0f "                // numeric
                             case 3 -> "%${colWidths[columnIndex]}.2f "                // decimal
                             case 4..5 -> "%${colWidths[columnIndex]}d "               // integer, smallint

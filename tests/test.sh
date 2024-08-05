@@ -79,9 +79,10 @@ VERBOSE=0
 PROJECTBASE=$HOME/dox/repos/groovysql
 GROOVYBASE=$PROJECTBASE/src/main/groovy
 TESTBASE=$PROJECTBASE/tests
-DBCONFIG=venture1.config
-RUNFORMAT=groovy8
+DBCONFIG=venture2.config
+RUNFORMAT=classfiles
 GROOVY_HOME=/usr/local/sdkman/candidates/groovy/current
+GROOVYSQL_VERSION=2.6
 PATH=$GROOVY_HOME/bin:$PATH
 
 trap "exit 255" 1 2 3 15
@@ -115,38 +116,41 @@ done
 shift $(( OPTIND - 1 ))
 
 case $RUNFORMAT in
-groovysql7)
+jar7)
         EXEC=""
         GROOVYSQL=groovysql7
         type $GROOVYSQL
         ;;
-groovysql8)
+jar)
         EXEC=""
-        GROOVYSQL=groovysql8
+        GROOVYSQL=groovysql
         type $GROOVYSQL
         ;;
-jar)
+java-jar)
         EXEC="java -jar" 
-        GROOVYSQL=$PROJECTBASE/build/libs/groovysql-2.3-all.jar
+        GROOVYSQL=$PROJECTBASE/build/libs/groovysql-${GROOVYSQL_VERSION}-all.jar
         ;;
-groovy7)
+classfiles7)
         EXEC="groovy"
         GROOVYSQL=net/venturechain/database/GroovySQL.groovy
         export CLASSPATH
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc.jar
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
         CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
+        CLASSPATH+=:/app/denodo/lib/mysql-connector-j-8.4.0.jar
+        CLASSPATH+=:/app/denodo/lib/sqlite
         CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
         CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
         CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
-	;;
-groovy8)
+      	;;
+classfiles)
         EXEC="groovy"
         GROOVYSQL=net/venturechain/database/GroovySQL.groovy
         export CLASSPATH
         CLASSPATH+=:/app/d8/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc.jar
         CLASSPATH+=:/app/d8/lib/extensions/jdbc-drivers/vdp-8.0/denodo-vdp-jdbcdriver.jar
         CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
+        CLASSPATH+=:/app/denodo/lib/mysql-connector-j-8.4.0.jar
         CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
         CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
         CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
@@ -196,7 +200,7 @@ test.sh - GroovySQL test suite
 
 =head1 SYNOPSIS
 
-    test.sh [-h] [-FCST] [-r runformat] [-O options] [-v level] [test] [format]
+    test.sh [-h] [-FCST] [-c config] [-r runformat] [-O options] [-v level] [test] [format]
 
 =head1 DESCRIPTION
 
@@ -241,10 +245,10 @@ Extended option enables some debugging output.
 
 =item -r runformat
 
-Specifies a runformat of "groovy", "jar", or "groovysql".
-Specifying "groovy" results in running groovy with the generated class files (groovy GroovySQL.groovy),
-specifying "jar" results in running java with the generated jar file (java -jar groovysql.jar),
-and specifying "groovysql" results in running the generated jar file (groovysql).
+Specifies a runformat of "classfiles", "java-jar", or "jar".
+Specifying "classfiles" results in running groovy with the generated class files (groovy GroovySQL.groovy),
+specifying "java-jar" results in running java with the generated jar file (java -jar groovysql.jar),
+and specifying "jar" results in running the generated jar file (groovysql).
 
 =item -v level
 

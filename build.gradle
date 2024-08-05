@@ -3,6 +3,24 @@
  * For more details on building Java & JVM projects, please refer to
  *   https://docs.gradle.org/8.6/userguide/building_java_projects.html
  * in the Gradle documentation.
+ *
+ * While there is a clean task it doesn't seem to clear
+ * the gradle cache as compiles still report "FROM CACHE"
+ * full recompilation after:
+ *     rm --recursive $HOME/.gradle/caches/build-cache-*
+ *
+ * To change Java versions:
+ *      build.gradle: find JavaLanguageVersion, change to new version
+ *      sdk use java <version identifier>
+ *      File > Settings >> Build, Execution, Deployment > Compiler > Java Compiler: set Project bytecode version to new level
+ *      File > Project Structure > Project Settings > Project > SDK: set to desired version
+ *      File > Project Structure > Project Settings > Modules > Dependencies > Module SDK: select desired version
+ *      File > Project Structure > Platform Settings > SDKs: select desired version
+ *
+ * To change GroovySQL version number:
+ *      gradle.properties: update version spec
+ *      tests/test.sh: adjust GROOVYSQL_VERSION setting
+ *      Connection.groovy: adjust version spec in "powered by Groovy" message
  */
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
@@ -21,20 +39,20 @@ group = 'net.venturechain.database'
 repositories {
     mavenCentral()
     flatDir {
-        dirs '/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x',
-                '/app/d7/lib/extensions/jdbc-drivers/vdp-7.0'
+        dirs '/app/d8/lib/extensions/jdbc-drivers/snowflake-1.x',
+                '/app/d8/lib/extensions/jdbc-drivers/vdp-8.0'
     }
 }
 
 dependencies {
-    implementation 'org.apache.groovy:groovy:4.0.21'
-    implementation 'org.apache.groovy:groovy-dateutil:4.0.21'
-    implementation 'org.apache.groovy:groovy-cli-commons:4.0.21'
-    implementation 'org.apache.groovy:groovy-toml:4.0.21'
-    implementation 'org.apache.groovy:groovy-xml:4.0.21'
-    implementation 'org.apache.groovy:groovy-json:4.0.21'
-    implementation 'org.apache.groovy:groovy-sql:4.0.21'
-    implementation 'org.apache.groovy:groovy-cli-commons:4.0.21'
+    implementation 'org.apache.groovy:groovy:4.0.22'
+    implementation 'org.apache.groovy:groovy-dateutil:4.0.22'
+    implementation 'org.apache.groovy:groovy-cli-commons:4.0.22'
+    implementation 'org.apache.groovy:groovy-toml:4.0.22'
+    implementation 'org.apache.groovy:groovy-xml:4.0.22'
+    implementation 'org.apache.groovy:groovy-json:4.0.22'
+    implementation 'org.apache.groovy:groovy-sql:4.0.22'
+    implementation 'org.apache.groovy:groovy-cli-commons:4.0.22'
     implementation 'org.apache.commons:commons-csv:1.10.0'
     implementation 'org.jline:jline:3.26.1'
     implementation 'org.apache.commons:commons-lang3:3.14.0'
@@ -42,6 +60,7 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.23.1'
     implementation 'org.postgresql:postgresql:42.7.3'
     implementation 'com.mysql:mysql-connector-j:8.4.0'
+    implementation 'org.xerial:sqlite-jdbc:3.46.0.1'
     implementation name: 'snowflake-jdbc'
     implementation name: 'denodo-vdp-jdbcdriver'
 
@@ -56,7 +75,7 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(11)
     }
 }
 
