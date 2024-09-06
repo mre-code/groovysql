@@ -64,7 +64,7 @@ class Connection {
     }
 
     void displayOutput(Double level, messageObject) {
-        // level.indent => display at verbose level with optional indent
+        // level.indent => display at this verbose level with optional indent
         if (Math.abs(m_verbose) >= level) {
             String message = messageObject
             message.replaceAll("\t","    ").split('\n').each { String fragment ->

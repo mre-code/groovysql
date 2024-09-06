@@ -156,8 +156,8 @@ classfiles)
         EXEC="groovy"
         GROOVYSQL=net/venturechain/database/GroovySQL.groovy
         export CLASSPATH
-        CLASSPATH+=:/app/d8/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc.jar
-        CLASSPATH+=:/app/d8/lib/extensions/jdbc-drivers/vdp-8.0/denodo-vdp-jdbcdriver.jar
+        CLASSPATH+=:/app/d9/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc.jar
+        CLASSPATH+=:/app/d9/lib/extensions/jdbc-drivers/vdp-9.0/denodo-vdp-jdbcdriver.jar
         CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
         CLASSPATH+=:/app/denodo/lib/mysql-connector-j-8.4.0.jar
         CLASSPATH+=:/app/denodo/lib/sqlite-jdbc-3.46.0.0.jar
@@ -288,11 +288,11 @@ To run all file-based tests in all formats
 
   test.sh -F
 
-To run all file-based test in all formats using generated jar
+To run all file-based tests in all formats using generated jar
 
   test.sh -r jar -F
 
-To run a single file-based test with JSON output
+To run a single file-based tests with JSON output
 
   test.sh -F customer json
 

@@ -1,3 +1,7 @@
+*.zip
+.idea-backup/
+log4j-example
+
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
