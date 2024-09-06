@@ -207,8 +207,8 @@ in [TOML format](https://toml.io/en/) and support the following parameters:
 
 Additionally, GroovySQL has a connection testing capability. With the `--testconnect <arg>` option GroovySQL will open a
 database connection, submit a simple query, read the results, discard the results, and close the connection a requested
-number of times, pausing between each connection for a requested interval. The `--testconnect` argument is of the form '
-N@W' where N represents the number of connection iterations and W represents the wait interval between connections
+number of times, pausing between each connection for a requested interval. The `--testconnect` argument is of the form 
+'N@W' where N represents the number of connection iterations and W represents the wait interval between connections
 measured in seconds. If the interval is not specified it defaults to 1 second. This feature is sometimes useful in
 diagnosing/investigating intermittent database connectivity issues, e.g.,
 `--testconnect 2880@60` would run over a weekend checking once a minute.

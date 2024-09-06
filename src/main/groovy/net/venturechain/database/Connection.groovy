@@ -115,7 +115,7 @@ class Connection {
 
         m_verbose = options.verbose
 
-        Sql.LOG.level = java.util.logging.Level.OFF     // turn off groovy.sql default logging
+         Sql.LOG.level = java.util.logging.Level.OFF     // turn off groovy.sql default logging
 
         if (m_dbConfigFile) {
             m_dbConfig = new TomlSlurper().parse(new File(m_dbConfigFile))
@@ -131,7 +131,7 @@ class Connection {
         switch (m_dbScheme) {
             case "vdb":
             case "denodo":
-                m_dbClass = "com.denodo.vdp.jdbc.Driver"
+                m_dbClass = m_dbClass ?: "com.denodo.vdp.jdbc.Driver"
                 m_dbOptions = m_dbOptions ?:
                         "reuseRegistrySocket=true" +                    // for load balancer set to false
                                 "&wanOptimizedCalls=false" +                     // optimize for WAN
@@ -145,7 +145,7 @@ class Connection {
                                 "VDBJDBCDatabaseMetadata.driverVersion", "VDBJDBCDatabaseMetadata.driverUpdateVersion")
                 break
             case "snowflake":
-                m_dbClass = "net.snowflake.client.jdbc.SnowflakeDriver"
+                m_dbClass = m_dbClass ?: "net.snowflake.client.jdbc.SnowflakeDriver"
                 m_dbName = "?db=${m_dbName}"
                 m_dbOptions = m_dbOptions ?: "queryTimeout=0"
                 m_dbOptions = "&" + m_dbOptions
@@ -154,19 +154,19 @@ class Connection {
                         getDbDriverVersion("net/snowflake/client/jdbc/version.properties", "version")
                 break
             case "postgresql":
-                m_dbClass = "org.postgresql.Driver"
+                m_dbClass = m_dbClass ?: "org.postgresql.Driver"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 var driver = new org.postgresql.Driver()
                 m_dbDriverVersion = "Postgres JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
                 break
             case "mysql":
-                m_dbClass = "com.mysql.cj.jdbc.Driver"
+                m_dbClass = m_dbClass ?: "com.mysql.cj.jdbc.Driver"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 var driver = new com.mysql.cj.jdbc.Driver()
                 m_dbDriverVersion = "MySQL JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
                 break
             case "sqlite":
-                m_dbClass = "org.sqlite.JDBC"
+                m_dbClass = m_dbClass ?: "org.sqlite.JDBC"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 var driver = new org.sqlite.JDBC()
                 m_dbDriverVersion = "SQLite3 JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
@@ -271,8 +271,7 @@ class Connection {
                         writer.printf("%-${colWidths[columnIndex]}.${m_width}s ", " ")
                     } else {
                         formatString = switch (colTypes[columnIndex]) {
-                            case -6 -> "%${colWidths[columnIndex]}d "                 // tinyint
-                            case -5 -> "%${colWidths[columnIndex]}.0f "               // bigint
+                            case -6..-5 -> "%${colWidths[columnIndex]}d "             // tinyint, bigint
                             case 2 -> "%${colWidths[columnIndex]}.0f "                // numeric
                             case 3 -> "%${colWidths[columnIndex]}.2f "                // decimal
                             case 4..5 -> "%${colWidths[columnIndex]}d "               // integer, smallint
@@ -280,7 +279,13 @@ class Connection {
                             case 8 -> "%${colWidths[columnIndex]}.1f "                // double
                             default -> "%-${colWidths[columnIndex]}.${m_width}s "     // everything else
                         }
-                        writer.printf(formatString, rowResult[columnIndex])
+                        try {
+                            writer.printf(formatString, rowResult[columnIndex])
+                        } catch (exception) {
+                            // in rare circumstances some bigint columns need floating point formatting
+                            formatString = "%${colWidths[columnIndex]}.0f "
+                            writer.printf(formatString, rowResult[columnIndex])
+                        }
                     }
                 }
                 writer.write("\n")

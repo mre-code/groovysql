@@ -17,6 +17,8 @@ function run_file_tests() {
              --format $FORMAT                                     \
              --verbose $VERBOSE                                   \
              $OPTIONS
+
+	echo "... return code = $?"
     done
 }
 
@@ -34,6 +36,8 @@ function run_cmdline_test() {
         --format $FORMAT                                     \
         --verbose $VERBOSE                                   \
         $OPTIONS
+
+    echo "... return code = $?"
 }
 
 function run_stdio_test() {
@@ -48,6 +52,8 @@ function run_stdio_test() {
         --format $FORMAT                                     \
         --verbose $VERBOSE                                   \
         $OPTIONS
+
+    echo "... return code = $?"
 }
 
 function run_interactive_test() {
@@ -60,6 +66,8 @@ function run_interactive_test() {
         --verbose $VERBOSE                                   \
         --interactive                                        \
         $OPTIONS
+
+    echo "... return code = $?"
 }
 
 function run_connection_test() {
@@ -72,6 +80,7 @@ function run_connection_test() {
         --testconnect $FREQUENCY                             \
         $OPTIONS
 
+    echo "... return code = $?"
 }
 
 MYNAME=~+/$0
@@ -123,7 +132,7 @@ jar7)
         ;;
 jar)
         EXEC=""
-        GROOVYSQL=groovysql
+        GROOVYSQL=groovysql9
         type $GROOVYSQL
         ;;
 java-jar)
@@ -138,7 +147,7 @@ classfiles7)
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
         CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
         CLASSPATH+=:/app/denodo/lib/mysql-connector-j-8.4.0.jar
-        CLASSPATH+=:/app/denodo/lib/sqlite
+        CLASSPATH+=:/app/denodo/lib/v7/sqlite-jdbc-3.44.1.0.jar
         CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
         CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
         CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
@@ -151,6 +160,7 @@ classfiles)
         CLASSPATH+=:/app/d8/lib/extensions/jdbc-drivers/vdp-8.0/denodo-vdp-jdbcdriver.jar
         CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
         CLASSPATH+=:/app/denodo/lib/mysql-connector-j-8.4.0.jar
+        CLASSPATH+=:/app/denodo/lib/sqlite-jdbc-3.46.0.0.jar
         CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
         CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
         CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
@@ -253,8 +263,12 @@ and specifying "jar" results in running the generated jar file (groovysql).
 =item -v level
 
 Sets verbose level.
-Default is 0 which disables all messages.
-Level 1 enables informational messages and level 2 adds additional information.
+
+ - Level 0 disables all messages and only displays data.
+ - Level 1 enables basic informational messages (version information and open/close connection messages).
+ - Level 2 adds additional information (adds open/close success, query audit).
+ - Level 3 adds debug information (input trace, text format field adjustments).
+ - Level 4 adds debug information (system.properties display).
 
 =item -T frequency
 
