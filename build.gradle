@@ -35,7 +35,7 @@ group = 'net.venturechain.database'
 repositories {
     mavenCentral()
     flatDir {
-        dirs '/app/d9/lib/extensions/jdbc-drivers/snowflake-1.x',
+        dirs    '/app/d9/lib/extensions/jdbc-drivers/snowflake-1.x',
                 '/app/d9/lib/extensions/jdbc-drivers/vdp-9'
     }
 }

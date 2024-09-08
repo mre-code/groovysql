@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c05eccf3-2b82-4352-9802-01ef58c0524c" name="Changes" comment="uiDesigner.xml created/updated?">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/groovy/net/venturechain/database/Connection.groovy" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/groovy/net/venturechain/database/Connection.groovy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/sqltest.directives" beforeDir="false" afterPath="$PROJECT_DIR$/tests/sqltest.directives" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test.sh" afterDir="false" />
+    <list default="true" id="c05eccf3-2b82-4352-9802-01ef58c0524c" name="Changes" comment="minor tweaks">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,18 +49,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.Build groovysql.executor": "Run",
-    "Groovy.groovysql.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "java-encapsulation",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/mre/dox/repos/groovysql/src/main/groovy/net/venturechain/database/GroovySQL.groovy",
-    "settings.editor.selected.configurable": "advanced.settings"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.Build groovysql.executor&quot;: &quot;Run&quot;,
+    &quot;Groovy.groovysql.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;java-encapsulation&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/mre/dox/repos/groovysql/src/main/groovy/net/venturechain/database/GroovySQL.groovy&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;
   }
-}]]></component>
-  <component name="RunManager">
+}</component>
+  <component name="RunManager" selected="Gradle.groovysql [shadowJar]">
+    <configuration name="groovysql [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="shadowJar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
     <configuration name="groovysql" type="GroovyScriptRunConfiguration" factoryName="Groovy">
       <setting name="path" value="file://$PROJECT_DIR$/src/main/groovy/net/venturechain/database/GroovySQL.groovy" />
       <setting name="vmparams" value="--add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED" />
@@ -81,6 +100,11 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.groovysql [shadowJar]" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -107,12 +131,21 @@
       <option name="project" value="LOCAL" />
       <updated>1725597618412</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="minor tweaks">
+      <option name="closed" value="true" />
+      <created>1725660847706</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1725660847706</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Connection: bigint format fix in textmode, fixed config file dbClass override&#10;GroovySQL: added version display&#10;test.sh: added return code display" />
     <MESSAGE value="uiDesigner.xml created/updated?" />
-    <option name="LAST_COMMIT_MESSAGE" value="uiDesigner.xml created/updated?" />
+    <MESSAGE value="minor tweaks" />
+    <option name="LAST_COMMIT_MESSAGE" value="minor tweaks" />
   </component>
 </project>
