@@ -448,7 +448,7 @@ class Connection {
                 if (isResultSet) {
                     data = result
                 } else {
-                    displayOutput(0, "updated rowcount: $result")
+                    if (Math.abs(m_verbose) > 0) displayOutput(0, "updated rowcount: $result")
                 }
             }
         } catch (exception) {
