@@ -59,6 +59,8 @@ class Connection {
     String m_historyFile
     String m_historyIgnore = "exit*:quit*:.format *:.output *:.width *:.append *"
 
+    Integer m_returnCode
+
     static String timestamp() {
         return new Date().format("yyyy-MM-dd HH:mm:ss")
     }
@@ -82,15 +84,23 @@ class Connection {
         System.exit(2)
     }
 
+    Integer returnCode() {
+        return m_returnCode
+    }
+
     static String getDbDriverVersion(String propertyResource, String[] props) {
-        Properties appProps = new Properties().tap {
-            load(Thread.currentThread().contextClassLoader.getResourceAsStream(propertyResource))
+        try {
+            Properties appProps = new Properties().tap {
+                load(Thread.currentThread().contextClassLoader.getResourceAsStream(propertyResource))
+            }
+            List values = []
+            props.each { String property ->
+                values << appProps.getProperty(property)
+            }
+            values.collect().join("-")
+        } catch (e) {
+            return "0.0"
         }
-        List values = []
-        props.each { String property ->
-            values << appProps.getProperty(property)
-        }
-        values.collect().join("-")
     }
 
     Connection(OptionAccessor options) {
@@ -115,7 +125,9 @@ class Connection {
 
         m_verbose = options.verbose
 
-         Sql.LOG.level = java.util.logging.Level.OFF     // turn off groovy.sql default logging
+        m_returnCode = 0
+
+        Sql.LOG.level = java.util.logging.Level.OFF     // turn off groovy.sql default logging
 
         if (m_dbConfigFile) {
             m_dbConfig = new TomlSlurper().parse(new File(m_dbConfigFile))
@@ -198,9 +210,9 @@ class Connection {
                 m_connection = Sql.newInstance(m_connectionParameters)
                 displayOutput(2, "successfully opened connection to ${m_dbUrl}")
             } catch (SQLException sqlException) {
-                displayOutput(0, ">>> unable to open dbconnection to ${m_dbUrl}; error:")
-                displayOutput(0.4, sqlException)
-                displayOutput(0.4, "user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
+                displayOutput(0, ">>> ERROR: unable to open dbconnection to ${m_dbUrl}:")
+                displayOutput(-0.4, sqlException)
+                displayOutput(-0.4, "user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
                 System.exit(1)
             }
         }
@@ -452,8 +464,9 @@ class Connection {
                 }
             }
         } catch (exception) {
-            displayOutput(0, ">>> error:")
-            displayOutput(0.4, exception)
+            m_returnCode = 3
+            displayOutput(0, ">>> ERROR:")
+            displayOutput(-0.4, exception)
             displayOutput(0, " ")
             return
         }

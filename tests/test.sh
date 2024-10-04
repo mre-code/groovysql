@@ -5,14 +5,15 @@ function run_file_tests() {
 
     for TEST in ${TESTS[@]} 
     do
-        TESTNAME=${TEST/*./}
+        TESTNAME=$(basename $TEST)
 
-        echo "... running $TESTNAME test (format=$FORMAT, options=$OPTIONS)"
+        echo "### =========="
+        echo "### running $TESTNAME (format=$FORMAT, options=$OPTIONS)"
         echo "... $EXEC $GROOVYSQL"
 
         $EXEC $GROOVYSQL                                          \
              --config  $TESTBASE/$DBCONFIG                        \
-             --filein  $TESTBASE/sqltest.$TESTNAME                \
+             --filein  $TESTBASE/$TESTNAME                        \
              --fileout $TESTBASE/results-$TESTNAME.$FORMAT        \
              --format $FORMAT                                     \
              --verbose $VERBOSE                                   \
@@ -25,7 +26,7 @@ function run_file_tests() {
 function run_cmdline_test() {
     FORMAT=$1
 
-    echo "... running cmdline test (format=$FORMAT, options=$OPTIONS)"
+    echo "### running cmdline test (format=$FORMAT, options=$OPTIONS)"
     echo "... $EXEC $GROOVYSQL"
 
     SQL=$(cat $TESTBASE/test.cmdline)
@@ -43,7 +44,7 @@ function run_cmdline_test() {
 function run_stdio_test() {
     FORMAT=$1
 
-    echo "... running stdio test (format=$FORMAT, options=$OPTIONS)"
+    echo "### running stdio test (format=$FORMAT, options=$OPTIONS)"
     echo "... $EXEC $GROOVYSQL"
 
     cat $TESTBASE/test.stdio |
@@ -58,7 +59,7 @@ function run_stdio_test() {
 
 function run_interactive_test() {
 
-    echo "... running interactive test (options=$OPTIONS)"
+    echo "### running interactive test (options=$OPTIONS)"
     echo "... $EXEC $GROOVYSQL"
 
     $EXEC $GROOVYSQL                                         \
@@ -72,7 +73,7 @@ function run_interactive_test() {
 
 function run_connection_test() {
 
-    echo "... running connection test ($FREQUENCY, options=$OPTIONS)"
+    echo "### running connection test ($FREQUENCY, options=$OPTIONS)"
     echo "... $EXEC $GROOVYSQL"
 
     $EXEC $GROOVYSQL                                         \
@@ -88,7 +89,6 @@ VERBOSE=0
 PROJECTBASE=$HOME/dox/repos/groovysql
 GROOVYBASE=$PROJECTBASE/src/main/groovy
 TESTBASE=$PROJECTBASE/tests
-DBCONFIG=venture2.config
 RUNFORMAT=classfiles
 GROOVY_HOME=/usr/local/sdkman/candidates/groovy/current
 GROOVYSQL_VERSION=2.6
@@ -100,12 +100,12 @@ cd $PROJECTBASE || exit
 
 cd $GROOVYBASE || exit
 
-[ -e $TESTBASE/test.cmdline ] || ( cd $TESTBASE; ln -s sqltest.audit test.cmdline )
-[ -e $TESTBASE/test.stdio   ] || ( cd $TESTBASE; ln -s sqltest.audit test.stdio   )
+[ -e $TESTBASE/test.cmdline ] || ( cd $TESTBASE; ln -s sqltest-1.audit test.cmdline )
+[ -e $TESTBASE/test.stdio   ] || ( cd $TESTBASE; ln -s sqltest-1.audit test.stdio   )
 
 function usage() { pod2usage -verbose 0 $MYNAME ; exit 1 ; }
 
-while getopts :r:iFCST:hO:v:c: OPT
+while getopts :r:ie:FCST:hO:v:c: OPT
 do
         case "$OPT" in
         F)      ACTION=run_file_tests ;;
@@ -113,6 +113,7 @@ do
         S)      ACTION=run_stdio_test ;;
         T)      ACTION=run_connection_test ; FREQUENCY=$OPTARG ;;
         i)      ACTION=run_interactive_test ;;
+	e)	DBENV="-$OPTARG" ;;
         c)      DBCONFIG=$OPTARG ;;
         r)      RUNFORMAT=$OPTARG ;;
         O)      OPTIONS+=" --$OPTARG" ;;
@@ -123,6 +124,8 @@ do
         esac
 done
 shift $(( OPTIND - 1 ))
+
+: ${DBCONFIG:=venture2.config}
 
 case $RUNFORMAT in
 jar7)
@@ -151,19 +154,21 @@ classfiles7)
         CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
         CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
         CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
+        CLASSPATH+=:/app/denodo/lib/slf4j-nop-2.0.16.jar
       	;;
 classfiles)
         EXEC="groovy"
         GROOVYSQL=net/venturechain/database/GroovySQL.groovy
         export CLASSPATH
         CLASSPATH+=:/app/d9/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc.jar
-        CLASSPATH+=:/app/d9/lib/extensions/jdbc-drivers/vdp-9.0/denodo-vdp-jdbcdriver.jar
+        CLASSPATH+=:/app/d9/lib/extensions/jdbc-drivers/vdp-9/denodo-vdp-jdbcdriver.jar
         CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
         CLASSPATH+=:/app/denodo/lib/mysql-connector-j-8.4.0.jar
         CLASSPATH+=:/app/denodo/lib/sqlite-jdbc-3.46.0.0.jar
         CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
         CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
         CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
+        CLASSPATH+=:/app/denodo/lib/slf4j-nop-2.0.16.jar
         ;;
 *)
 	echo "unrecognized runformat"
@@ -175,7 +180,7 @@ case $ACTION in
         *file*)
                 if [ $1 ]
                 then TESTS=($1); shift
-                else TESTS=($TESTBASE/sqltest.* missing_input_file)
+                else TESTS=($TESTBASE/sqltest${DBENV}.* missing_input_file)
                 fi
                 ;;
         *connect*)
@@ -210,7 +215,7 @@ test.sh - GroovySQL test suite
 
 =head1 SYNOPSIS
 
-    test.sh [-h] [-FCST] [-c config] [-r runformat] [-O options] [-v level] [test] [format]
+    test.sh [-h] [-FCST] [-c config] [-e dbenv] [-r runformat] [-O options] [-v level] [test] [format]
 
 =head1 DESCRIPTION
 
@@ -259,6 +264,11 @@ Specifies a runformat of "classfiles", "java-jar", or "jar".
 Specifying "classfiles" results in running groovy with the generated class files (groovy GroovySQL.groovy),
 specifying "java-jar" results in running java with the generated jar file (java -jar groovysql.jar),
 and specifying "jar" results in running the generated jar file (groovysql).
+
+=item -e dbenv
+
+Selects a set of sqltest input files.
+The dbenv parameter, an integer, allows sqltest input files to be grouped by target database environment.
 
 =item -v level
 

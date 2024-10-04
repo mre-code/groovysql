@@ -83,5 +83,9 @@ class GroovySQL {
         } else {
             connection.processFileInput()
         }
+
+        System.exit(connection.returnCode())
     }
+
+
 }

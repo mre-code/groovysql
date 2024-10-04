@@ -1,3 +1,0 @@
-use acme_crm;
-
-select * from address;
