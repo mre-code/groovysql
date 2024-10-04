@@ -3,7 +3,7 @@ package net.venturechain.database
 import groovy.cli.commons.CliBuilder
 import groovy.cli.commons.OptionAccessor
 
-class SqlClient {
+class GroovySQL {
 
     static void errorExit(String msg) {
         println ">>> ERROR: $msg"
@@ -12,7 +12,8 @@ class SqlClient {
 
     static void main(String[] args) {
 
-        var cliOptions = new CliBuilder(usage: "sqlclient [options]", posix: true, header: "Groovy SQL Client CLI\nOptions:")
+        var cliOptions = new CliBuilder(usage: "groovysql [options]", posix: true,
+                header: "Groovy SQL Client CLI version 2.6 (${GroovySystem.version}/${Runtime.version()})\nOptions:")
 
         cliOptions.with {
             a(longOpt: 'append', 'output file append mode')
@@ -48,16 +49,19 @@ class SqlClient {
         }
 
         if (options.fileout) {
-            if (new File(options.fileout).exists() and !options.append) {
-                errorExit("file $options.fileout already exists")
-            } else {
-                try {
+            try {
+                if (new File(options.fileout).exists()) {
+                    if (!options.append) {
+                        errorExit("output file '$options.fileout' already exists")
+                    } else if (!new File(options.fileout).canWrite()) {
+                        errorExit("no write access to output file '$options.fileout'")
+                    }
+                } else {
                     var outFile = new File(options.fileout)
-                    outFile.delete()
                     outFile.createNewFile()
-                } catch (exception) {
-                    errorExit("$exception (${options.fileout})")
                 }
+            } catch (exception) {
+                errorExit("$exception (${options.fileout})")
             }
         }
 
@@ -79,5 +83,9 @@ class SqlClient {
         } else {
             connection.processFileInput()
         }
+
+        System.exit(connection.returnCode())
     }
+
+
 }

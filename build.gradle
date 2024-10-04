@@ -1,0 +1,98 @@
+/*
+ * GroovySQL Groovy application project
+ * For more details on building Java & JVM projects, please refer to
+ *   https://docs.gradle.org/8.6/userguide/building_java_projects.html
+ * in the Gradle documentation.
+ *
+ * While there is a clean task it doesn't seem to clear
+ * the gradle cache as compiles still report "FROM CACHE"
+ * full recompilation after:
+ *     rm --recursive $HOME/.gradle/caches/build-cache-*
+ *
+ * To change Java versions:
+ *      build.gradle: find JavaLanguageVersion, change to new version
+ *      sdk default java <version identifier>
+ *      File > Settings >> Build, Execution, Deployment > Compiler > Java Compiler: set Project bytecode version to new level
+ *      File > Project Structure > Project Settings > Project > SDK: set to desired version
+ *      File > Project Structure > Project Settings > Modules > Dependencies > Module SDK: select desired version
+ *      File > Project Structure > Platform Settings > SDKs: select desired version
+ *
+ * To change GroovySQL version number:
+ *      gradle.properties: update version spec
+ *      tests/test.sh: adjust GROOVYSQL_VERSION setting
+ *      Connection.groovy: adjust version spec in "powered by Groovy" message
+ *      GroovySQL.groovy: adjust version spec in CLIBuilder
+ */
+
+plugins {
+    id 'groovy'
+    id 'application'
+    id 'com.gradleup.shadow' version '8.3.0'  // want to be able to bundle everything into a single JAR
+}
+
+group = 'net.venturechain.database'
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs    '/app/d9/lib/extensions/jdbc-drivers/snowflake-1.x',
+                '/app/d9/lib/extensions/jdbc-drivers/vdp-9'
+    }
+}
+
+dependencies {
+    implementation 'org.apache.groovy:groovy:4.0.22'
+    implementation 'org.apache.groovy:groovy-dateutil:4.0.22'
+    implementation 'org.apache.groovy:groovy-cli-commons:4.0.22'
+    implementation 'org.apache.groovy:groovy-toml:4.0.22'
+    implementation 'org.apache.groovy:groovy-xml:4.0.22'
+    implementation 'org.apache.groovy:groovy-json:4.0.22'
+    implementation 'org.apache.groovy:groovy-sql:4.0.22'
+    implementation 'org.apache.groovy:groovy-cli-commons:4.0.22'
+    implementation 'com.gradleup.shadow:shadow-gradle-plugin:8.3.0'
+    implementation 'org.apache.commons:commons-csv:1.10.0'
+    implementation 'org.jline:jline:3.26.1'
+    implementation 'org.apache.commons:commons-lang3:3.14.0'
+    implementation 'org.slf4j:slf4j-nop:2.0.16'
+    implementation 'org.postgresql:postgresql:42.7.3'
+    implementation 'com.mysql:mysql-connector-j:8.4.0'
+    implementation 'org.xerial:sqlite-jdbc:3.46.0.1'
+    implementation name: 'snowflake-jdbc'
+    implementation name: 'denodo-vdp-jdbcdriver'
+
+    // used by gradle (only) to integrate with maven
+    implementation libs.guava
+
+    // testImplementation 'org.spockframework:spock-core:2.4-M1-groovy-4.0'
+    // testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+    //
+    // testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+application {
+    mainClass = 'net.venturechain.database.GroovySQL'
+}
+
+//tasks.named("test") {
+//    useJUnitPlatform()
+//    testLogging {
+//        events "started", "passed", "skipped", "failed"
+//    }
+//}
+
+tasks.register("myConfigurations") {
+    doLast {
+        configurations.forEach { println(it) }
+    }
+}
+
+// had to fully qualify this after switching to GradleUp/shadow 8.3.0
+tasks.withType(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    mergeGroovyExtensionModules()
+}

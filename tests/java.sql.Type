@@ -7,7 +7,7 @@ Boolean: 16
 Char: 1
 Clob: 2005
 Date: 91
-Datalink70
+Datalink: 70
 Decimal: 3
 Distinct: 2001
 Double: 8
@@ -20,7 +20,7 @@ NClob: 2011
 Varchar: 12
 VarBinary: -3
 Tiny int: -6
-Time stamt with time zone: 2014
+Time stamp with time zone: 2014
 Timestamp: 93
 Time: 92
 Struct: 2002

@@ -5,82 +5,93 @@ function run_file_tests() {
 
     for TEST in ${TESTS[@]} 
     do
-        TESTNAME=${TEST/*./}
+        TESTNAME=$(basename $TEST)
 
-        echo "... running $TESTNAME test (format=$FORMAT, options=$OPTIONS)"
-        echo "... $EXEC $SQLCLIENT"
+        echo "### =========="
+        echo "### running $TESTNAME (format=$FORMAT, options=$OPTIONS)"
+        echo "... $EXEC $GROOVYSQL"
 
-        $EXEC $SQLCLIENT                                          \
-             --config  $TESTBASE/venture1.config                  \
-             --filein  $TESTBASE/sqltest.$TESTNAME                \
+        $EXEC $GROOVYSQL                                          \
+             --config  $TESTBASE/$DBCONFIG                        \
+             --filein  $TESTBASE/$TESTNAME                        \
              --fileout $TESTBASE/results-$TESTNAME.$FORMAT        \
              --format $FORMAT                                     \
              --verbose $VERBOSE                                   \
              $OPTIONS
+
+	echo "... return code = $?"
     done
 }
 
 function run_cmdline_test() {
     FORMAT=$1
 
-    echo "... running cmdline test (format=$FORMAT, options=$OPTIONS)"
-    echo "... $EXEC $SQLCLIENT"
+    echo "### running cmdline test (format=$FORMAT, options=$OPTIONS)"
+    echo "... $EXEC $GROOVYSQL"
 
     SQL=$(cat $TESTBASE/test.cmdline)
 
-    $EXEC $SQLCLIENT                                         \
-        --config  $TESTBASE/venture1.config                  \
+    $EXEC $GROOVYSQL                                         \
+        --config  $TESTBASE/$DBCONFIG                        \
         --sql "$SQL"                                         \
         --format $FORMAT                                     \
         --verbose $VERBOSE                                   \
         $OPTIONS
+
+    echo "... return code = $?"
 }
 
 function run_stdio_test() {
     FORMAT=$1
 
-    echo "... running stdio test (format=$FORMAT, options=$OPTIONS)"
-    echo "... $EXEC $SQLCLIENT"
+    echo "### running stdio test (format=$FORMAT, options=$OPTIONS)"
+    echo "... $EXEC $GROOVYSQL"
 
     cat $TESTBASE/test.stdio |
-    $EXEC $SQLCLIENT                                         \
-        --config  $TESTBASE/venture1.config                  \
+    $EXEC $GROOVYSQL                                         \
+        --config  $TESTBASE/$DBCONFIG                        \
         --format $FORMAT                                     \
         --verbose $VERBOSE                                   \
         $OPTIONS
+
+    echo "... return code = $?"
 }
 
 function run_interactive_test() {
 
-    echo "... running interactive test (options=$OPTIONS)"
-    echo "... $EXEC $SQLCLIENT"
+    echo "### running interactive test (options=$OPTIONS)"
+    echo "... $EXEC $GROOVYSQL"
 
-    $EXEC $SQLCLIENT                                         \
-        --config  $TESTBASE/venture1.config                  \
+    $EXEC $GROOVYSQL                                         \
+        --config  $TESTBASE/$DBCONFIG                        \
         --verbose $VERBOSE                                   \
         --interactive                                        \
         $OPTIONS
+
+    echo "... return code = $?"
 }
 
 function run_connection_test() {
 
-    echo "... running connection test ($FREQUENCY, options=$OPTIONS)"
-    echo "... $EXEC $SQLCLIENT"
+    echo "### running connection test ($FREQUENCY, options=$OPTIONS)"
+    echo "... $EXEC $GROOVYSQL"
 
-    $EXEC $SQLCLIENT                                         \
-        --config  $TESTBASE/venture1.config                  \
+    $EXEC $GROOVYSQL                                         \
+        --config  $TESTBASE/$DBCONFIG                        \
         --testconnect $FREQUENCY                             \
         $OPTIONS
 
+    echo "... return code = $?"
 }
 
 MYNAME=~+/$0
 VERBOSE=0
-PROJECTBASE=$HOME/dox/repos/sqlclient
-GROOVYBASE=$PROJECTBASE/app/src/main/groovy
-TESTBASE=$PROJECTBASE/app/tests
-RUNFORMAT=groovy
+PROJECTBASE=$HOME/dox/repos/groovysql
+GROOVYBASE=$PROJECTBASE/src/main/groovy
+TESTBASE=$PROJECTBASE/tests
+RUNFORMAT=classfiles
 GROOVY_HOME=/usr/local/sdkman/candidates/groovy/current
+GROOVYSQL_VERSION=2.6
 PATH=$GROOVY_HOME/bin:$PATH
 
 trap "exit 255" 1 2 3 15
@@ -89,12 +100,12 @@ cd $PROJECTBASE || exit
 
 cd $GROOVYBASE || exit
 
-[ -e $TESTBASE/test.cmdline ] || ( cd $TESTBASE; ln -s sqltest.audit test.cmdline )
-[ -e $TESTBASE/test.stdio   ] || ( cd $TESTBASE; ln -s sqltest.audit test.stdio   )
+[ -e $TESTBASE/test.cmdline ] || ( cd $TESTBASE; ln -s sqltest-1.audit test.cmdline )
+[ -e $TESTBASE/test.stdio   ] || ( cd $TESTBASE; ln -s sqltest-1.audit test.stdio   )
 
 function usage() { pod2usage -verbose 0 $MYNAME ; exit 1 ; }
 
-while getopts :r:iFCST:hO:v: OPT
+while getopts :r:ie:FCST:hO:v:c: OPT
 do
         case "$OPT" in
         F)      ACTION=run_file_tests ;;
@@ -102,6 +113,8 @@ do
         S)      ACTION=run_stdio_test ;;
         T)      ACTION=run_connection_test ; FREQUENCY=$OPTARG ;;
         i)      ACTION=run_interactive_test ;;
+	e)	DBENV="-$OPTARG" ;;
+        c)      DBCONFIG=$OPTARG ;;
         r)      RUNFORMAT=$OPTARG ;;
         O)      OPTIONS+=" --$OPTARG" ;;
         v)      VERBOSE=$OPTARG ;;
@@ -112,34 +125,62 @@ do
 done
 shift $(( OPTIND - 1 ))
 
+: ${DBCONFIG:=venture2.config}
+
 case $RUNFORMAT in
-sqlclient)
+jar7)
         EXEC=""
-        SQLCLIENT=sqlclient 
-        type $SQLCLIENT
+        GROOVYSQL=groovysql7
+        type $GROOVYSQL
         ;;
 jar)
-        EXEC="java -jar" 
-        SQLCLIENT=$PROJECTBASE/app/build/libs/app-2.2-all.jar
+        EXEC=""
+        GROOVYSQL=groovysql9
+        type $GROOVYSQL
         ;;
-groovy)
+java-jar)
+        EXEC="java -jar" 
+        GROOVYSQL=$PROJECTBASE/build/libs/groovysql-${GROOVYSQL_VERSION}-all.jar
+        ;;
+classfiles7)
         EXEC="groovy"
-        SQLCLIENT=net/venturechain/database/SqlClient.groovy
+        GROOVYSQL=net/venturechain/database/GroovySQL.groovy
         export CLASSPATH
-        CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc-3.6.28.jar
+        CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc.jar
         CLASSPATH+=:/app/d7/lib/extensions/jdbc-drivers/vdp-7.0/denodo-vdp-jdbcdriver.jar
         CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
+        CLASSPATH+=:/app/denodo/lib/mysql-connector-j-8.4.0.jar
+        CLASSPATH+=:/app/denodo/lib/v7/sqlite-jdbc-3.44.1.0.jar
         CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
         CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
         CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
+        CLASSPATH+=:/app/denodo/lib/slf4j-nop-2.0.16.jar
+      	;;
+classfiles)
+        EXEC="groovy"
+        GROOVYSQL=net/venturechain/database/GroovySQL.groovy
+        export CLASSPATH
+        CLASSPATH+=:/app/d9/lib/extensions/jdbc-drivers/snowflake-1.x/snowflake-jdbc.jar
+        CLASSPATH+=:/app/d9/lib/extensions/jdbc-drivers/vdp-9/denodo-vdp-jdbcdriver.jar
+        CLASSPATH+=:/app/denodo/lib/postgresql-42.7.3.jar
+        CLASSPATH+=:/app/denodo/lib/mysql-connector-j-8.4.0.jar
+        CLASSPATH+=:/app/denodo/lib/sqlite-jdbc-3.46.0.0.jar
+        CLASSPATH+=:/app/denodo/lib/commons-csv-1.10.0.jar
+        CLASSPATH+=:/app/denodo/lib/jline-3.26.1.jar
+        CLASSPATH+=:/app/denodo/lib/commons-lang3-3.14.0.jar
+        CLASSPATH+=:/app/denodo/lib/slf4j-nop-2.0.16.jar
         ;;
+*)
+	echo "unrecognized runformat"
+	exit 255
+	;;
 esac
 
 case $ACTION in
         *file*)
                 if [ $1 ]
                 then TESTS=($1); shift
-                else TESTS=($TESTBASE/sqltest.* missing_input_file)
+                else TESTS=($TESTBASE/sqltest${DBENV}.* missing_input_file)
                 fi
                 ;;
         *connect*)
@@ -170,15 +211,15 @@ exit
 
 =head1 NAME
 
-test.sh - SqlClient test suite
+test.sh - GroovySQL test suite
 
 =head1 SYNOPSIS
 
-    test.sh [-h] [-FCST] [-r runformat] [-O options] [-v level] [test] [format]
+    test.sh [-h] [-FCST] [-c config] [-e dbenv] [-r runformat] [-O options] [-v level] [test] [format]
 
 =head1 DESCRIPTION
 
-Provides a command line interface to run the various tests for SqlClient.
+Provides a command line interface to run the various tests for GroovySQL.
 
 Formats supported:
 
@@ -219,16 +260,25 @@ Extended option enables some debugging output.
 
 =item -r runformat
 
-Specifies a runformat of "groovy", "jar", or "sqlclient".
-Specifying "groovy" results in running groovy with the generated class files (groovy SqlClient.groovy),
-specifying "jar" results in running java with the generated jar file (java -jar app.jar),
-and specifying "sqlclient" results in running the generated jar file (sqlclient).
+Specifies a runformat of "classfiles", "java-jar", or "jar".
+Specifying "classfiles" results in running groovy with the generated class files (groovy GroovySQL.groovy),
+specifying "java-jar" results in running java with the generated jar file (java -jar groovysql.jar),
+and specifying "jar" results in running the generated jar file (groovysql).
+
+=item -e dbenv
+
+Selects a set of sqltest input files.
+The dbenv parameter, an integer, allows sqltest input files to be grouped by target database environment.
 
 =item -v level
 
 Sets verbose level.
-Default is 0 which disables all messages.
-Level 1 enables informational messages and level 2 adds additional information.
+
+ - Level 0 disables all messages and only displays data.
+ - Level 1 enables basic informational messages (version information and open/close connection messages).
+ - Level 2 adds additional information (adds open/close success, query audit).
+ - Level 3 adds debug information (input trace, text format field adjustments).
+ - Level 4 adds debug information (system.properties display).
 
 =item -T frequency
 
@@ -248,11 +298,11 @@ To run all file-based tests in all formats
 
   test.sh -F
 
-To run all file-based test in all formats using generated jar
+To run all file-based tests in all formats using generated jar
 
   test.sh -r jar -F
 
-To run a single file-based test with JSON output
+To run a single file-based tests with JSON output
 
   test.sh -F customer json
 

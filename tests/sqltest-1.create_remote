@@ -1,0 +1,13 @@
+SELECT *
+FROM CREATE_REMOTE_TABLE()
+WHERE remote_table_name = 'SURVEY_TARGET'
+      AND replace_base_view_if_exist = TRUE
+      AND replace_remote_table_if_exist = TRUE
+      AND datasource_database_name = 'venture3'
+      AND datasource_name = 'venture3_ds'
+      AND datasource_catalog = 'venture3'
+      AND datasource_schema = 'public'
+      AND base_view_database_name = 'venture3'
+      AND base_view_name = 'SURVEY_TARGET'
+      AND base_view_folder = '/base views'
+      AND query = 'SELECT * FROM VENTURE3.RAW_SURVEY_DATA';

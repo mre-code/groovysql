@@ -1,0 +1,7 @@
+.remove ../tests/results
+select 1 as "id", 'val1' as "value", null as "default" from dual()
+union
+select null as "id", 'val2' as "value", 'updated' as "default" from dual()
+union
+select 3 as "id", null as "value", 'default' as "default" from dual()
+;
