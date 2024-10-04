@@ -66,13 +66,13 @@ class Connection {
     }
 
     void displayOutput(Double level, messageObject) {
-        // level.indent => display at this verbose level with optional indent
-        if (Math.abs(m_verbose) >= level) {
+        String theLevel = String.valueOf(level)
+        Integer displayLevel = theLevel.substring(0,theLevel.indexOf(".")) as Integer
+        Integer displayIndent = theLevel.substring(theLevel.indexOf(".")+1) as Integer
+        if (Math.abs(m_verbose) >= displayLevel) {
             String message = messageObject
             message.replaceAll("\t","    ").split('\n').each { String fragment ->
                 if (m_timestamps) print "${timestamp()} :: "
-                String displayLevel = String.valueOf(level)
-                Integer displayIndent = displayLevel.substring(displayLevel.indexOf(".")+1) as Integer
                 println " " * displayIndent + fragment
             }
         }
@@ -211,8 +211,8 @@ class Connection {
                 displayOutput(2, "successfully opened connection to ${m_dbUrl}")
             } catch (SQLException sqlException) {
                 displayOutput(0, ">>> ERROR: unable to open dbconnection to ${m_dbUrl}:")
-                displayOutput(-0.4, sqlException)
-                displayOutput(-0.4, "user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
+                displayOutput(0.4, sqlException)
+                displayOutput(0.4, "user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
                 System.exit(1)
             }
         }
@@ -466,7 +466,7 @@ class Connection {
         } catch (exception) {
             m_returnCode = 3
             displayOutput(0, ">>> ERROR:")
-            displayOutput(-0.4, exception)
+            displayOutput(0.4, exception)
             displayOutput(0, " ")
             return
         }
