@@ -59,12 +59,14 @@ class Connection {
     String m_historyFile
     String m_historyIgnore = "exit*:quit*:.format *:.output *:.width *:.append *"
 
+    Integer m_returnCode
+
     static String timestamp() {
         return new Date().format("yyyy-MM-dd HH:mm:ss")
     }
 
     void displayOutput(Double level, messageObject) {
-        // level.indent => display at verbose level with optional indent
+        // level.indent => display at this verbose level with optional indent
         if (Math.abs(m_verbose) >= level) {
             String message = messageObject
             message.replaceAll("\t","    ").split('\n').each { String fragment ->
@@ -82,15 +84,23 @@ class Connection {
         System.exit(2)
     }
 
+    Integer returnCode() {
+        return m_returnCode
+    }
+
     static String getDbDriverVersion(String propertyResource, String[] props) {
-        Properties appProps = new Properties().tap {
-            load(Thread.currentThread().contextClassLoader.getResourceAsStream(propertyResource))
+        try {
+            Properties appProps = new Properties().tap {
+                load(Thread.currentThread().contextClassLoader.getResourceAsStream(propertyResource))
+            }
+            List values = []
+            props.each { String property ->
+                values << appProps.getProperty(property)
+            }
+            values.collect().join("-")
+        } catch (e) {
+            return "0.0"
         }
-        List values = []
-        props.each { String property ->
-            values << appProps.getProperty(property)
-        }
-        values.collect().join("-")
     }
 
     Connection(OptionAccessor options) {
@@ -115,6 +125,8 @@ class Connection {
 
         m_verbose = options.verbose
 
+        m_returnCode = 0
+
         Sql.LOG.level = java.util.logging.Level.OFF     // turn off groovy.sql default logging
 
         if (m_dbConfigFile) {
@@ -131,7 +143,7 @@ class Connection {
         switch (m_dbScheme) {
             case "vdb":
             case "denodo":
-                m_dbClass = "com.denodo.vdp.jdbc.Driver"
+                m_dbClass = m_dbClass ?: "com.denodo.vdp.jdbc.Driver"
                 m_dbOptions = m_dbOptions ?:
                         "reuseRegistrySocket=true" +                    // for load balancer set to false
                                 "&wanOptimizedCalls=false" +                     // optimize for WAN
@@ -145,33 +157,39 @@ class Connection {
                                 "VDBJDBCDatabaseMetadata.driverVersion", "VDBJDBCDatabaseMetadata.driverUpdateVersion")
                 break
             case "snowflake":
-                m_dbClass = "net.snowflake.client.jdbc.SnowflakeDriver"
+                m_dbClass = m_dbClass ?: "net.snowflake.client.jdbc.SnowflakeDriver"
                 m_dbName = "?db=${m_dbName}"
-                m_dbOptions = m_dbOptions ?:
-                        "queryTimeout=0"
+                m_dbOptions = m_dbOptions ?: "queryTimeout=0"
                 m_dbOptions = "&" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 m_dbDriverVersion = "Snowflake JDBC " +
                         getDbDriverVersion("net/snowflake/client/jdbc/version.properties", "version")
                 break
             case "postgresql":
-                m_dbClass = "org.postgresql.Driver"
+                m_dbClass = m_dbClass ?: "org.postgresql.Driver"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 var driver = new org.postgresql.Driver()
                 m_dbDriverVersion = "Postgres JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
                 break
             case "mysql":
-                m_dbClass = "com.mysql.cj.jdbc.Driver"
+                m_dbClass = m_dbClass ?: "com.mysql.cj.jdbc.Driver"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 var driver = new com.mysql.cj.jdbc.Driver()
                 m_dbDriverVersion = "MySQL JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
+                break
+            case "sqlite":
+                m_dbClass = m_dbClass ?: "org.sqlite.JDBC"
+                m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
+                var driver = new org.sqlite.JDBC()
+                m_dbDriverVersion = "SQLite3 JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
                 break
             default:
                 errorExit("dbscheme not recognized (${m_dbScheme})")
         }
 
         if (Math.abs(m_verbose) >= 1) {
-            displayOutput(1,"GroovySQL 2.4 powered by Groovy ${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
+            displayOutput(1, "GroovySQL 2.6 powered by Groovy " +
+                    "${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
         }
 
         m_connectionParameters = [
@@ -192,9 +210,9 @@ class Connection {
                 m_connection = Sql.newInstance(m_connectionParameters)
                 displayOutput(2, "successfully opened connection to ${m_dbUrl}")
             } catch (SQLException sqlException) {
-                displayOutput(0, ">>> unable to open dbconnection to ${m_dbUrl}; error:")
-                displayOutput(0.4, sqlException)
-                displayOutput(0.4, "user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
+                displayOutput(0, ">>> ERROR: unable to open dbconnection to ${m_dbUrl}:")
+                displayOutput(-0.4, sqlException)
+                displayOutput(-0.4, "user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
                 System.exit(1)
             }
         }
@@ -226,7 +244,7 @@ class Connection {
             closeConnection()
             if (iteration < iterations) {
                 displayOutput(1, "waiting ${interval} sec")
-                Thread.sleep(interval*1000)
+                Thread.sleep(interval * 1000)
             }
         }
     }
@@ -273,7 +291,13 @@ class Connection {
                             case 8 -> "%${colWidths[columnIndex]}.1f "                // double
                             default -> "%-${colWidths[columnIndex]}.${m_width}s "     // everything else
                         }
-                        writer.printf(formatString, rowResult[columnIndex])
+                        try {
+                            writer.printf(formatString, rowResult[columnIndex])
+                        } catch (exception) {
+                            // in rare circumstances some bigint columns need floating point formatting
+                            formatString = "%${colWidths[columnIndex]}.0f "
+                            writer.printf(formatString, rowResult[columnIndex])
+                        }
                     }
                 }
                 writer.write("\n")
@@ -436,12 +460,13 @@ class Connection {
                 if (isResultSet) {
                     data = result
                 } else {
-                    displayOutput(0, "updated rowcount: $result")
+                    if (Math.abs(m_verbose) > 0) displayOutput(0, "updated rowcount: $result")
                 }
             }
         } catch (exception) {
-            displayOutput(0, ">>> error:")
-            displayOutput(0.4, exception)
+            m_returnCode = 3
+            displayOutput(0, ">>> ERROR:")
+            displayOutput(-0.4, exception)
             displayOutput(0, " ")
             return
         }

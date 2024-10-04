@@ -12,7 +12,8 @@ class GroovySQL {
 
     static void main(String[] args) {
 
-        var cliOptions = new CliBuilder(usage: "groovysql [options]", posix: true, header: "Groovy SQL Client CLI\nOptions:")
+        var cliOptions = new CliBuilder(usage: "groovysql [options]", posix: true,
+                header: "Groovy SQL Client CLI version 2.6 (${GroovySystem.version}/${Runtime.version()})\nOptions:")
 
         cliOptions.with {
             a(longOpt: 'append', 'output file append mode')
@@ -82,5 +83,9 @@ class GroovySQL {
         } else {
             connection.processFileInput()
         }
+
+        System.exit(connection.returnCode())
     }
+
+
 }
