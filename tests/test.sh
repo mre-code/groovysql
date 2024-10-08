@@ -135,7 +135,7 @@ jar7)
         ;;
 jar)
         EXEC=""
-        GROOVYSQL=groovysql9
+        GROOVYSQL=groovysql
         type $GROOVYSQL
         ;;
 java-jar)

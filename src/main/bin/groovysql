@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# GroovySQL wrapper to add the java encapsulation options
+# since that doesn't seem possible via directly executed jars
+# and also serves as a way to control other options in future
+
+BINDIR=$(dirname $0)
+
+JAVA_ENCAPSULATION_OPTIONS="--add-opens=java.base/java.nio=ALL-UNNAMED	\
+--add-opens=java.base/java.util=ALL-UNNAMED	\
+--add-opens=java.base/java.lang=ALL-UNNAMED	\
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED	\
+--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED	\
+--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED	\
+--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED	\
+--add-opens=java.base/java.nio.charset=ALL-UNNAMED	\
+--add-opens=java.base/java.net=ALL-UNNAMED	\
+--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED"
+
+java $JAVA_ENCAPSULATION_OPTIONS -jar $BINDIR/groovysql.jar $@

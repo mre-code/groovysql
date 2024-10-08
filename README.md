@@ -19,11 +19,12 @@ leveraging the [jline3 library](https://jline.github.io/).
 
 ## Deploying GroovySQL
 
-The simplest approach to deploying GroovySQL is to download the latest jar file from the Releases and place it in your
-execution path ($PATH). When deployed as an executable jar (recommended), GroovySQL does not require anything to be
-installed other than Java. All other requirements are self-contained in the GroovySQL jar file. In particular there is
-no requirement to install Groovy or any database drivers, GroovySQL will locate all those artifacts in its jar file at
-runtime. The jar file is not extracted or installed anywhere.
+The simplest approach to deploying GroovySQL is to download the latest shell and jar file from the Releases and place
+them in your execution path ($PATH). GroovySQL does not require anything to be installed other than Java. All other
+requirements are self-contained in the GroovySQL jar file. In particular there is no requirement to install Groovy or
+any database drivers, GroovySQL will locate all those artifacts in its jar file at runtime. The jar file is not
+extracted or installed anywhere. Recommendation is to copy both files to /usr/local/bin, provided it is in the execution
+path ($PATH).
 
 ## Building GroovySQL
 
@@ -41,34 +42,16 @@ current version of GroovySQL.
 
 ## Running GroovySQL
 
-GroovySQL, like any Java program, can be run in one of two ways. Either the single groovysql.jar file needs to be placed
-somewhere in the filesystem, e.g. /usr/local/lib/groovysql.jar, and then GroovySQL can be run via Java jar execution:
+GroovySQL is deployed as two files, groovysql (shell wrapper) and groovysql.jar (groovysql and all of its dependencies),
+to a location in the execution path ($PATH).  This allows groovysql to be run from the command line and/or batch.
 
-```
-java -jar /usr/local/lib/groovysql.jar <options>
-```
+The groovysql shell wrapper accepts all groovysql options and adds the Java options to work around the Java
+encapsulation introduced with the Java Modular System (JEP261) in Java 9 and increasingly enforced with newer Java 
+versions.  The work around is needed for the various database drivers which continue to rely on reflection to gain
+access to internal APIs.
 
-Or the jar file can be placed in the filesystem in the execution path (PATH), made executable, and renamed as groovysql,
-in which case it can be executed as a traditional command:
-
-```
-groovysql <options>
-```
-
-### Additional package support
-
-That second (optional) execution approach above often requires the
-`binfmts-support` and `jarwrapper` packages. To install these packages:
-
-```
-sudo apt install binfmt-support
-sudo apt install jarwrapper
-```
-
-After installing the packages, the `binfmts-support --display` command will display the configuration. Other options
-allow updating the configuration if necessary. This [binfmt web page](https://binfmt-support.nongnu.org/) provides some
-information about the package. There is also the update-binfmts(8) man page reference that goes into detail about
-managing and displaying the configuration.
+By introducing the groovysql shell wrapper, it provides an opportunity for additional control over the groovysql
+execution environment.
 
 ## GroovySQL output formats
 
