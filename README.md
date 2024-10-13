@@ -2,9 +2,11 @@
 
 GroovySQL is a database client designed primarily for batch SQL submission. It is written in Groovy, which compiles to
 Java, and is compatible with vendor-provided Java database drivers. In particular, it works with the Denodo JDBC virtual
-database driver for Denodo version 7, 8, and 9. It has also been tested with the Snowflake, Postgres, MySQL, and SQLite3
-JDBC drivers. Support for other Java-based database drivers can be added, though adding additional database driver
-support requires some minor changes and rebuilding GroovySQL.
+database driver for Denodo version 9 as well as the Snowflake, Postgres, MySQL, and SQLite3 JDBC drivers. Support for
+other Java-based database drivers can be added, though adding additional database driver support requires some minor
+changes and rebuilding GroovySQL.  Beginning with GroovySQL 2.6 the release is built to support Denodo 9, which should
+be backward-compatible with Denodo 8, as well as Snowflake, Postgres, MySQL, and SQLite3 databases.  For best results
+Java 17 is the recommended JRE version and only requirement; no other libraries, packages, drivers, etc., are needed.  
 
 The Denodo Data Virtualization product does not come with a command line interface (CLI) and is typically accessed
 through tools like DBeaver interactively and Java applications or EAI tools like DataBricks for application service.
@@ -13,16 +15,16 @@ GroovySQL provides a CLI for use from shell-based batch implementations.
 GroovySQL takes input from any one of standard input, command line, or file. SQL statements normally must be terminated
 with a semicolon although for command-line input the semicolon is optional. In addition to standard input, for example
 redirected from a file or pipe, GroovySQL also provides an interactive mode with command line editing and history
-leveraging the
-[jline3 library](https://jline.github.io/).
+leveraging the [jline3 library](https://jline.github.io/).
 
 ## Deploying GroovySQL
 
-The simplest approach to deploying GroovySQL is to download the latest jar file from the Releases and place it in your
-execution path ($PATH). When deployed as an executable jar (recommended), GroovySQL does not require anything to be
-installed other than Java. All other requirements are self-contained in the GroovySQL jar file. In particular there is
-no requirement to install Groovy or any database drivers, GroovySQL will locate all those artifacts in its jar file at
-runtime. The jar file is not extracted or installed anywhere.
+The simplest approach to deploying GroovySQL is to download the latest shell and jar file from the Releases and place
+them in your execution path ($PATH). GroovySQL does not require anything to be installed other than Java. All other
+requirements are self-contained in the GroovySQL jar file. In particular there is no requirement to install Groovy or
+any database drivers, GroovySQL will locate all those artifacts in its jar file at runtime. The jar file is not
+extracted or installed anywhere. Recommendation is to copy both files to /usr/local/bin, provided it is in the execution
+path ($PATH).
 
 ## Building GroovySQL
 
@@ -40,39 +42,16 @@ current version of GroovySQL.
 
 ## Running GroovySQL
 
-GroovySQL, like any Java program, can be run in one of two ways. Either the single groovysql.jar file needs to be placed
-somewhere in the filesystem, e.g. /usr/local/lib/groovysql.jar, and then GroovySQL can be run via Java jar execution:
+GroovySQL is deployed as two files, groovysql (shell wrapper) and groovysql.jar (groovysql and all of its dependencies),
+to a location in the execution path ($PATH).  This allows groovysql to be run from the command line and/or batch.
 
-```
-java -jar /usr/local/lib/groovysql.jar <options>
-```
+The groovysql shell wrapper accepts all groovysql options and adds the Java options to work around the Java
+encapsulation introduced with the Java Modular System (JEP261) in Java 9 and increasingly enforced with newer Java 
+versions.  The work around is needed for the various database drivers which continue to rely on reflection to gain
+access to internal APIs.
 
-Or the jar file can be placed in the filesystem in the execution path (PATH), made executable, and renamed as groovysql,
-in which case it can be executed as a traditional command:
-
-```
-groovysql <options>
-```
-
-Note: In the Releases there are two jar files, groovysql and groovysql7. The difference is with respect to Denodo
-support - groovysql supports modern Denodo and groovysql7 supports the older Denodo 7 with its two connection model
-(ports 9999 and 9997 by default). Denodo 8 and beyond use the more traditional single connection model (port 9999 by
-default). Support for the other database drivers is not affected by this Denodo driver issue.
-
-### Additional package support
-
-That second (optional) execution approach above often requires the
-`binfmts-support` and `jarwrapper` packages. To install these packages:
-
-```
-sudo apt install binfmt-support
-sudo apt install jarwrapper
-```
-
-After installing the packages, the `binfmts-support --display` command will display the configuration. Other options
-allow updating the configuration if necessary. This [binfmt web page](https://binfmt-support.nongnu.org/) provides some
-information about the package. There is also the update-binfmts(8) man page reference that goes into detail about
-managing and displaying the configuration.
+By introducing the groovysql shell wrapper, it provides an opportunity for additional control over the groovysql
+execution environment.
 
 ## GroovySQL output formats
 
