@@ -97,7 +97,7 @@ class Connection {
             props.each { String property ->
                 values << appProps.getProperty(property)
             }
-            values.collect().join("-")
+            values.collect().join("-").replaceAll("-null", "")
         } catch (e) {
             return "0.0"
         }
