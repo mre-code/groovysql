@@ -287,23 +287,23 @@ or [jq(1)](https://jqlang.github.io/jq/manual/) for postprocessing.
 Config files are optional files containing database connection parameters for a given database. They are written
 in [TOML format](https://toml.io/en/) and support the following parameters:
 
-    dbUser      - the database username
-    dbPassword  - the database password
-    dbScheme    - the JDBC scheme
-    dbHost      - the TCP network address (hostname:port)
-    dbName      - the database name
-    dbClass     - the database driver class name (optional, defaults based on dbScheme)
+    dbUser      - database username
+    dbPassword  - database password
+    dbScheme    - JDBC scheme
+    dbHost      - TCP network address (hostname:port)
+    dbName      - database name
+    dbClass     - database driver class name (optional, defaults based on dbScheme)
                     vdb defaults to com.denodo.vdp.jdbc.Driver
                     denodo defaults to com.denodo.vdp.jdbc.Driver
                     snowflake defaults to net.snowflake.client.jdbc.SnowflakeDriver
                     postgresql defaults to org.postgres.Driver
                     mysql defaults to com.mysql.cj.jdbc.Driver
                     sqlite defaults to org.sqlite.JDBC
-    dbOptions    - a database option added to the database URL (see Examples)
+    dbOptions    - database options added to the database URL (see Examples)
 
-Most of these parameters can also be specified through their own option, e.g. --user for dbUser, --node for dbHost, etc.
-None of the parameters is required in a Config file. If an option appears in a Config file and also is specified on the
-command line then the command line setting overrides, leaving the Config file settings as defaults.
+Most of these parameters can also be specified through their own option, e.g. `--user` for dbUser, `--node` for dbHost,
+etc. None of the parameters is required in a Config file. If an option appears in a Config file and also is specified on
+the command line then the command line setting overrides, leaving the Config file settings as defaults.
 
 A common use case is to use a Config file with dbScheme, dbHost, dbName, and dbOptions specified and leverage the
 `--authentication` option to handle the authentication aspect.
