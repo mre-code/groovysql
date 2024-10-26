@@ -1,12 +1,3 @@
----
-title: "GroovySQL"
-author: "Version 2.6"
-date: "Oct 2024"
-subject: "SQL Client"
-keywords: [ Groovy SQL ]
-lang: "en"
-...
-
 # GroovySQL - Groovy SQL Client
 
 GroovySQL is a database client designed primarily for batch SQL submission. It is written in Groovy, which compiles to
@@ -242,12 +233,12 @@ GroovySQL are:
 
 The dbClass for the connection defaults to the standard DriverManager class based on the scheme as follows:
 
-    vdb => com.denodo.vdp.jdbc.Driver
-    denodo => com.denodo.vdp.jdbc.Driver
-    snowflake => net.snowflake.client.jdbc.SnowflakeDriver
-    postgresql => org.postgres.Driver
-    mysql => com.mysql.cj.jdbc.Driver
-    sqlite => org.sqlite.JDBC
+    vdb ........................... com.denodo.vdp.jdbc.Driver
+    denodo ........................ com.denodo.vdp.jdbc.Driver
+    snowflake ..................... net.snowflake.client.jdbc.SnowflakeDriver
+    postgresql .................... org.postgres.Driver
+    mysql ......................... com.mysql.cj.jdbc.Driver
+    sqlite ........................ org.sqlite.JDBC
 
 In nonstandard situations the dbClass can be overridden through the Config file, typically for database driver debugging.
 
@@ -305,12 +296,6 @@ in [TOML format](https://toml.io/en/) and support the following parameters:
     dbName      - database name
     dbOptions   - database options added to the database URL (see Examples)
     dbClass     - database driver class name (defaults based on dbScheme)
-                    vdb => com.denodo.vdp.jdbc.Driver
-                    denodo => com.denodo.vdp.jdbc.Driver
-                    snowflake => net.snowflake.client.jdbc.SnowflakeDriver
-                    postgresql => org.postgres.Driver
-                    mysql => com.mysql.cj.jdbc.Driver
-                    sqlite => org.sqlite.JDBC
 
 Most of these parameters can also be specified through their own option, e.g. `--user` for dbUser, `--node` for dbHost,
 etc. None of the parameters is required in a Config file. If an option appears in a Config file and also is specified on
