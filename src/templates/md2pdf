@@ -1,23 +1,52 @@
 #!/bin/bash
 
 MARKDOWN_FILE=$1
+BLOCKSIZE=normalsize
+TABLESIZE=normalsize
 
 PDF_FILE=$(basename $MARKDOWN_FILE .md).pdf
+TEX_FILE=$(basename $MARKDOWN_FILE .md).tex
 
-pandoc $MARKDOWN_FILE \
-	--standalone \
-	--template eisvogel \
-	--listings \
-	--variable listings-disable-line-numbers=true \
-	--variable code-block-font-size=\\footnotesize \
-	--variable table-use-row-colors=true \
-	--variable geometry:margin=1in \
-	--variable linkcolor=blue \
-	--output $PDF_FILE
+case $2 in
+tex)		OUT_FILE=$TEX_FILE ;;
+'')		OUT_FILE=$PDF_FILE ; DEFAULT=true ;;
+*)		OUT_FILE=$PDF_FILE ; BLOCKSIZE=$2 ; TABLESIZE=${3:-$TABLESIZE} ;;
+esac
+
+if [ $DEFAULT ]
+then
+	echo "generating $OUT_FILE with default blocksize and tablesize"
+
+	pandoc $MARKDOWN_FILE \
+		--standalone \
+		--template eisvogel \
+		--listings \
+		--variable listings-disable-line-numbers=true \
+		--variable listings-no-page-break=true \
+		--variable table-use-row-colors=true \
+		--variable geometry:margin=1in \
+		--variable linkcolor=blue \
+		--output $OUT_FILE
+else
+	echo "generating $OUT_FILE with blocksize=$BLOCKSIZE and tablesize=$TABLESIZE"
+
+	pandoc $MARKDOWN_FILE \
+		--standalone \
+		--template eisvogel \
+		--listings \
+		--variable listings-disable-line-numbers=true \
+		--variable listings-no-page-break=true \
+		--variable code-block-font-size=\\$BLOCKSIZE \
+		--variable table-use-row-colors=true \
+		--variable geometry:margin=1in \
+		--variable linkcolor=blue \
+		--variable header-includes:"\\AtBeginEnvironment{longtable}{\\$TABLESIZE}" \
+		--output $OUT_FILE
+fi
 
 exit
 
-	--variable header-includes:'\usepackage[export]{adjustbox} \let\includegraphicsbak\includegraphics \renewcommand*{\includegraphics}[2][]{\includegraphicsbak[frame,#1]{#2}}' \
+		--variable header-includes:'\usepackage[export]{adjustbox} \let\includegraphicsbak\includegraphics \renewcommand*{\includegraphics}[2][]{\includegraphicsbak[frame,#1]{#2}}' \
 
 # LaTeX font sizes:
 # 

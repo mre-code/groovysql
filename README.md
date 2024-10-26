@@ -240,6 +240,17 @@ GroovySQL are:
     mysql
     sqlite
 
+The dbClass for the connection defaults to the standard DriverManager class based on the scheme as follows:
+
+    vdb => com.denodo.vdp.jdbc.Driver
+    denodo => com.denodo.vdp.jdbc.Driver
+    snowflake => net.snowflake.client.jdbc.SnowflakeDriver
+    postgresql => org.postgres.Driver
+    mysql => com.mysql.cj.jdbc.Driver
+    sqlite => org.sqlite.JDBC
+
+In nonstandard situations the dbClass can be overridden through the Config file, typically for database driver debugging.
+
 ## Usage
 
 GroovySQL reads SQL input, submits SQL statements to a connected database, and formats the results in one of the output
@@ -289,21 +300,24 @@ in [TOML format](https://toml.io/en/) and support the following parameters:
 
     dbUser      - database username
     dbPassword  - database password
-    dbScheme    - JDBC scheme
+    dbScheme    - JDBC scheme (see Schemes)
     dbHost      - TCP network address (hostname:port)
     dbName      - database name
-    dbClass     - database driver class name (optional, defaults based on dbScheme)
-                    vdb defaults to com.denodo.vdp.jdbc.Driver
-                    denodo defaults to com.denodo.vdp.jdbc.Driver
-                    snowflake defaults to net.snowflake.client.jdbc.SnowflakeDriver
-                    postgresql defaults to org.postgres.Driver
-                    mysql defaults to com.mysql.cj.jdbc.Driver
-                    sqlite defaults to org.sqlite.JDBC
-    dbOptions    - database options added to the database URL (see Examples)
+    dbOptions   - database options added to the database URL (see Examples)
+    dbClass     - database driver class name (defaults based on dbScheme)
+                    vdb => com.denodo.vdp.jdbc.Driver
+                    denodo => com.denodo.vdp.jdbc.Driver
+                    snowflake => net.snowflake.client.jdbc.SnowflakeDriver
+                    postgresql => org.postgres.Driver
+                    mysql => com.mysql.cj.jdbc.Driver
+                    sqlite => org.sqlite.JDBC
 
 Most of these parameters can also be specified through their own option, e.g. `--user` for dbUser, `--node` for dbHost,
 etc. None of the parameters is required in a Config file. If an option appears in a Config file and also is specified on
 the command line then the command line setting overrides, leaving the Config file settings as defaults.
+
+The dbClass parameter is entirely optional as the dbScheme will automatically set a default dbClass. Setting dbClass
+will override the default. There is no command line option to set dbClass.
 
 A common use case is to use a Config file with dbScheme, dbHost, dbName, and dbOptions specified and leverage the
 `--authentication` option to handle the authentication aspect.
@@ -325,7 +339,7 @@ to a config file specified via the `--config` option.
 Additionally, GroovySQL has a connection testing capability. With the `--testconnect <arg>` option GroovySQL will open a
 database connection, submit a simple query, read the results, discard the results, and close the connection a requested
 number of times, pausing between each connection for a requested interval. The `--testconnect` argument is of the form
-'N@W' where N represents the number of connection iterations and W represents the wait interval between connections
+`N@W` where N represents the number of connection iterations and W represents the wait interval between connections
 measured in seconds. If the interval is not specified it defaults to 1 second. This feature is sometimes useful in
 diagnosing/investigating intermittent database connectivity issues, e.g., `--testconnect 2880@60` would run over a
 weekend checking once a minute. Used together with the `--timestamp` option this diagnostic approach can help identify
