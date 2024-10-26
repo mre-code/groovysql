@@ -4,6 +4,7 @@ MARKDOWN_FILE=$1
 BLOCKSIZE=normalsize
 TABLESIZE=normalsize
 
+YAML_CFG=$(basename $MARKDOWN_FILE .md).yaml
 PDF_FILE=$(basename $MARKDOWN_FILE .md).pdf
 TEX_FILE=$(basename $MARKDOWN_FILE .md).tex
 
@@ -17,36 +18,39 @@ if [ $DEFAULT ]
 then
 	echo "generating $OUT_FILE with default blocksize and tablesize"
 
-	pandoc $MARKDOWN_FILE \
+	pandoc $YAML_CFG $MARKDOWN_FILE \
 		--standalone \
 		--template eisvogel \
 		--listings \
-		--variable listings-disable-line-numbers=true \
-		--variable listings-no-page-break=true \
-		--variable table-use-row-colors=true \
-		--variable geometry:margin=1in \
-		--variable linkcolor=blue \
 		--output $OUT_FILE
 else
 	echo "generating $OUT_FILE with blocksize=$BLOCKSIZE and tablesize=$TABLESIZE"
 
-	pandoc $MARKDOWN_FILE \
+	pandoc $YAML_CFG $MARKDOWN_FILE \
 		--standalone \
 		--template eisvogel \
 		--listings \
-		--variable listings-disable-line-numbers=true \
-		--variable listings-no-page-break=true \
 		--variable code-block-font-size=\\$BLOCKSIZE \
-		--variable table-use-row-colors=true \
-		--variable geometry:margin=1in \
-		--variable linkcolor=blue \
 		--variable header-includes:"\\AtBeginEnvironment{longtable}{\\$TABLESIZE}" \
 		--output $OUT_FILE
 fi
 
 exit
 
-		--variable header-includes:'\usepackage[export]{adjustbox} \let\includegraphicsbak\includegraphics \renewcommand*{\includegraphics}[2][]{\includegraphicsbak[frame,#1]{#2}}' \
+# 		--variable header-includes:'\usepackage[export]{adjustbox} \let\includegraphicsbak\includegraphics \renewcommand*{\includegraphics}[2][]{\includegraphicsbak[frame,#1]{#2}}' \
+# 
+# Moved these to README.yaml:
+# 		--variable title="GroovySQL" \
+# 		--variable author="Version 2.6" \
+# 		--variable date="Oct 2024" \
+# 		--variable subject="SQL Client" \
+# 		--variable keywords="[ Groovy SQL ]" \
+# 		--variable lang="en" \
+# 		--variable listings-disable-line-numbers=true \
+# 		--variable listings-no-page-break=true \
+# 		--variable table-use-row-colors=true \
+# 		--variable geometry:margin=1in \
+# 		--variable linkcolor=blue \
 
 # LaTeX font sizes:
 # 
