@@ -198,12 +198,12 @@ class Connection {
 
         switch (m_authentication) {
             case ~/azure:/:
-                AzureProfile profile = new AzureProfile(AzureEnvironment.AZURE);
-                TokenCredential credential = new DefaultAzureCredentialBuilder()
-                        .authorityHost(profile.getEnvironment().getActiveDirectoryEndpoint())
-                        .build();
-                KeyVaultManager manager = KeyVaultManager
-                        .authenticate(credential, profile);
+//                AzureProfile profile = new AzureProfile(AzureEnvironment.AZURE);
+//                TokenCredential credential = new DefaultAzureCredentialBuilder()
+//                        .authorityHost(profile.getEnvironment().getActiveDirectoryEndpoint())
+//                        .build();
+//                KeyVaultManager manager = KeyVaultManager
+//                        .authenticate(credential, profile);
                 break
             case ~/gcp:/:
                 break
