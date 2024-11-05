@@ -55,6 +55,7 @@ class Connection {
     String m_dbDriverVersion
 
     Map m_connectionParameters = [:]
+    String m_authentication
 
     String m_historyFile
     String m_historyIgnore = "exit*:quit*:.format *:.output *:.width *:.append *"
@@ -109,8 +110,11 @@ class Connection {
         m_dbPassword = options.password
         m_dbName = options.database
         m_dbHost = options.node
-        m_dbConfigFile = options.config
         m_dbScheme = options.scheme
+        m_authentication = options.authentication
+
+        m_dbConfigFile = options.config
+
         m_sqlStatement = (options.sql ?: "") as String
 
         m_timestamps = (options.timestamps ?: false)
@@ -190,6 +194,21 @@ class Connection {
         if (Math.abs(m_verbose) >= 1) {
             displayOutput(1, "GroovySQL 2.6 powered by Groovy " +
                     "${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
+        }
+
+        switch (m_authentication) {
+            case ~/azure:/:
+//                AzureProfile profile = new AzureProfile(AzureEnvironment.AZURE);
+//                TokenCredential credential = new DefaultAzureCredentialBuilder()
+//                        .authorityHost(profile.getEnvironment().getActiveDirectoryEndpoint())
+//                        .build();
+//                KeyVaultManager manager = KeyVaultManager
+//                        .authenticate(credential, profile);
+                break
+            case ~/gcp:/:
+                break
+            case ~/aws:/:
+                break
         }
 
         m_connectionParameters = [

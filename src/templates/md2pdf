@@ -1,0 +1,67 @@
+#!/bin/bash
+
+MARKDOWN_FILE=$1
+BLOCKSIZE=normalsize
+TABLESIZE=normalsize
+
+YAML_CFG=$(basename $MARKDOWN_FILE .md).yaml
+PDF_FILE=$(basename $MARKDOWN_FILE .md).pdf
+TEX_FILE=$(basename $MARKDOWN_FILE .md).tex
+
+case $2 in
+tex)		OUT_FILE=$TEX_FILE ;;
+'')		OUT_FILE=$PDF_FILE ; DEFAULT=true ;;
+*)		OUT_FILE=$PDF_FILE ; BLOCKSIZE=$2 ; TABLESIZE=${3:-$TABLESIZE} ;;
+esac
+
+if [ $DEFAULT ]
+then
+	echo "generating $OUT_FILE with default blocksize and tablesize"
+
+	pandoc $YAML_CFG $MARKDOWN_FILE \
+		--standalone \
+		--template eisvogel \
+		--listings \
+		--output $OUT_FILE
+else
+	echo "generating $OUT_FILE with blocksize=$BLOCKSIZE and tablesize=$TABLESIZE"
+
+	pandoc $YAML_CFG $MARKDOWN_FILE \
+		--standalone \
+		--template eisvogel \
+		--listings \
+		--variable code-block-font-size=\\$BLOCKSIZE \
+		--variable header-includes:"\\AtBeginEnvironment{longtable}{\\$TABLESIZE}" \
+		--output $OUT_FILE
+fi
+
+exit
+
+# 		--variable header-includes:'\usepackage[export]{adjustbox} \let\includegraphicsbak\includegraphics \renewcommand*{\includegraphics}[2][]{\includegraphicsbak[frame,#1]{#2}}' \
+# 
+# Moved these to README.yaml:
+# 		--variable title="GroovySQL" \
+# 		--variable author="Version 2.6" \
+# 		--variable date="Oct 2024" \
+# 		--variable subject="SQL Client" \
+# 		--variable keywords="[ Groovy SQL ]" \
+# 		--variable lang="en" \
+# 		--variable listings-disable-line-numbers=true \
+# 		--variable listings-no-page-break=true \
+# 		--variable table-use-row-colors=true \
+# 		--variable geometry:margin=1in \
+# 		--variable linkcolor=blue \
+
+# LaTeX font sizes:
+# 
+# Command             10pt    11pt    12pt
+# \tiny               5       6       6
+# \scriptsize         7       8       8
+# \footnotesize       8       9       10
+# \small              9       10      10.95
+# \normalsize         10      10.95   12
+# \large              12      12      14.4
+# \Large              14.4    14.4    17.28
+# \LARGE              17.28   17.28   20.74
+# \huge               20.74   20.74   24.88
+# \Huge               24.88   24.88   24.88
