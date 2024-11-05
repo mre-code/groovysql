@@ -260,7 +260,7 @@ class Connection {
                     "justified (type=${colTypes[columnIndex]})"
         }
 
-        new FileWriter(m_fileOut, m_append).withWriter { writer ->
+        new FileWriter(m_fileOut, true).withWriter { writer ->
 
             // output column heading, limit heading width to field width as sql may not
             columnNames.eachWithIndex { var columnName, int columnIndex ->
@@ -306,7 +306,7 @@ class Connection {
     }
 
     void formatCSVResults(resultSet, columnNames) {
-        new FileWriter(m_fileOut, m_append).withWriter { writer ->
+        new FileWriter(m_fileOut, true).withWriter { writer ->
             new CSVPrinter(writer, CSVFormat.DEFAULT).with {
                 printRecord(columnNames)
                 resultSet.each { rowResult ->
@@ -317,7 +317,7 @@ class Connection {
     }
 
     void formatXMLResults(resultSet, columnNames) {
-        new FileWriter(m_fileOut, m_append).withWriter { writer ->
+        new FileWriter(m_fileOut, true).withWriter { writer ->
             new MarkupBuilder(writer).with {
                 rows {
                     resultSet.eachWithIndex { var rowResult, int rowid ->
@@ -335,7 +335,7 @@ class Connection {
     }
 
     void formatHTMLResults(resultSet, columnNames) {
-        new FileWriter(m_fileOut, m_append).withWriter { writer ->
+        new FileWriter(m_fileOut, true).withWriter { writer ->
             new MarkupBuilder(writer).with {
                 table {
                     thead {
@@ -396,7 +396,7 @@ class Connection {
                 break
         }
 
-        new FileWriter(m_fileOut, m_append).withWriter { writer ->
+        new FileWriter(m_fileOut, true).withWriter { writer ->
             writer.write(json.toPrettyString())
             writer.write("\n")
         }
