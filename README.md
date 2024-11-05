@@ -101,6 +101,7 @@ single option for convenience. It is shorthand for specifying the `--scheme`, `-
 |  -d   | `--database <arg>`       | specify database name                          |
 |  -f   | `--filein <arg>`         | specifies input filename containing SQL        |
 |  -F   | `--format <arg>`         | specify desired output format                  |
+|  -H   | `--csvheaders`           | output CSV headers                             |
 |  -h   | `--help`                 | displays this usage information                |
 |  -i   | `--interactive`          | run in interactive mode with editing/history   |
 |  -j   | `--jsonstyle <arg>`      | specify JSON style of quoted or standard       |
@@ -154,6 +155,10 @@ Specify desired output format. Valid formats are:
     html
     xml
     json
+
+### `-H|--csvheaders`
+
+Specifies column headers should be generated for CSV output.
 
 ### `-h|--help`
 
