@@ -23,6 +23,7 @@ class GroovySQL {
             f(longOpt: 'filein', 'specify input filename', args: 1)
             o(longOpt: 'fileout', 'specify output filename', args: 1)
             F(longOpt: 'format', 'specify format', args: 1)
+            H(longOpt: 'csvheaders', 'output CSV headers')
             h(longOpt: 'help', 'usage information')
             i(longOpt: 'interactive', 'run in interactive mode')
             j(longOpt: 'jsonstyle', 'JSON style', args: 1)

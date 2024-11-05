@@ -1,6 +1,2 @@
-.remove results.multi.1
-.remove results.multi.2
-.output results.multi.1
 select * from item limit 2;
-.output results.multi.2
 select * from customer limit 2;

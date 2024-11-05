@@ -44,6 +44,7 @@ class Connection {
 
     Integer m_verbose
 
+    Boolean m_csvHeaders
     String m_jsonStyle
     String m_format
     Integer m_width
@@ -123,6 +124,7 @@ class Connection {
         m_fileOut = (options.fileout ?: "/dev/stdout")
         m_append = options.append
 
+        m_csvHeaders = options.csvheaders
         m_jsonStyle = (options.jsonstyle ?: "quoted")
         m_format = (options.format ?: "text").toLowerCase()
         m_width = (options.width ?: 30)
@@ -327,7 +329,7 @@ class Connection {
     void formatCSVResults(resultSet, columnNames) {
         new FileWriter(m_fileOut, true).withWriter { writer ->
             new CSVPrinter(writer, CSVFormat.DEFAULT).with {
-                printRecord(columnNames)
+                if (m_csvHeaders) printRecord(columnNames)
                 resultSet.each { rowResult ->
                     printRecord(rowResult.values())
                 }
