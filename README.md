@@ -158,7 +158,7 @@ Specify desired output format. Valid formats are:
 
 ### `-H|--csvheaders`
 
-Specifies column headers should be generated for CSV output.
+Specifies column headers should be generated for CSV output.  By default CSV output does not include column headers.
 
 ### `-h|--help`
 
