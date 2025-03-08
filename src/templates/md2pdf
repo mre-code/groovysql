@@ -14,6 +14,8 @@ tex)		OUT_FILE=$TEX_FILE ;;
 *)		OUT_FILE=$PDF_FILE ; BLOCKSIZE=$2 ; TABLESIZE=${3:-$TABLESIZE} ;;
 esac
 
+[ ! -f $YAML_CFG ] && YAML_CFG=""
+
 if [ $DEFAULT ]
 then
 	echo "generating $OUT_FILE with default blocksize and tablesize"
