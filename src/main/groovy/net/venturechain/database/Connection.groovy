@@ -151,11 +151,9 @@ class Connection {
             case "denodo":
                 m_dbClass = m_dbClass ?: "com.denodo.vdp.jdbc.Driver"
                 m_dbOptions = m_dbOptions ?:
-                        "reuseRegistrySocket=true" +                    // for load balancer set to false
-                                "&wanOptimizedCalls=false" +                     // optimize for WAN
-                                "&queryTimeout=0" +                              // 0 ms = infinite
-                                "&chunkTimeout=1000" +                           // fetch flush @ 10 secs
-                                "&chunkSize=5000"                                // fetch flush @ 500 rows
+                        "queryTimeout=0" +                              // 0 ms = infinite
+                                "&chunkTimeout=1000" +                  // fetch flush @ 10 secs
+                                "&chunkSize=5000"                       // fetch flush @ 500 rows
                 m_dbOptions = "?" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 m_dbDriverVersion = "Denodo JDBC " +
