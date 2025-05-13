@@ -44,6 +44,7 @@ class Connection {
 
     Integer m_verbose
 
+    Boolean m_csvHeaders
     String m_jsonStyle
     String m_format
     Integer m_width
@@ -55,6 +56,7 @@ class Connection {
     String m_dbDriverVersion
 
     Map m_connectionParameters = [:]
+    String m_authentication
 
     String m_historyFile
     String m_historyIgnore = "exit*:quit*:.format *:.output *:.width *:.append *"
@@ -97,7 +99,7 @@ class Connection {
             props.each { String property ->
                 values << appProps.getProperty(property)
             }
-            values.collect().join("-")
+            values.collect().join("-").replaceAll("-null", "")
         } catch (e) {
             return "0.0"
         }
@@ -109,8 +111,11 @@ class Connection {
         m_dbPassword = options.password
         m_dbName = options.database
         m_dbHost = options.node
-        m_dbConfigFile = options.config
         m_dbScheme = options.scheme
+        m_authentication = options.authentication
+
+        m_dbConfigFile = options.config
+
         m_sqlStatement = (options.sql ?: "") as String
 
         m_timestamps = (options.timestamps ?: false)
@@ -119,6 +124,7 @@ class Connection {
         m_fileOut = (options.fileout ?: "/dev/stdout")
         m_append = options.append
 
+        m_csvHeaders = options.csvheaders
         m_jsonStyle = (options.jsonstyle ?: "quoted")
         m_format = (options.format ?: "text").toLowerCase()
         m_width = (options.width ?: 30)
@@ -145,11 +151,9 @@ class Connection {
             case "denodo":
                 m_dbClass = m_dbClass ?: "com.denodo.vdp.jdbc.Driver"
                 m_dbOptions = m_dbOptions ?:
-                        "reuseRegistrySocket=true" +                    // for load balancer set to false
-                                "&wanOptimizedCalls=false" +                     // optimize for WAN
-                                "&queryTimeout=0" +                              // 0 ms = infinite
-                                "&chunkTimeout=1000" +                           // fetch flush @ 10 secs
-                                "&chunkSize=5000"                                // fetch flush @ 500 rows
+                        "queryTimeout=0" +                              // 0 ms = infinite
+                                "&chunkTimeout=1000" +                  // fetch flush @ 10 secs
+                                "&chunkSize=5000"                       // fetch flush @ 500 rows
                 m_dbOptions = "?" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 m_dbDriverVersion = "Denodo JDBC " +
@@ -188,8 +192,23 @@ class Connection {
         }
 
         if (Math.abs(m_verbose) >= 1) {
-            displayOutput(1, "GroovySQL 2.6 powered by Groovy " +
+            displayOutput(1, "GroovySQL 2.7 powered by Groovy " +
                     "${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
+        }
+
+        switch (m_authentication) {
+            case ~/azure:/:
+//                AzureProfile profile = new AzureProfile(AzureEnvironment.AZURE);
+//                TokenCredential credential = new DefaultAzureCredentialBuilder()
+//                        .authorityHost(profile.getEnvironment().getActiveDirectoryEndpoint())
+//                        .build();
+//                KeyVaultManager manager = KeyVaultManager
+//                        .authenticate(credential, profile);
+                break
+            case ~/gcp:/:
+                break
+            case ~/aws:/:
+                break
         }
 
         m_connectionParameters = [
@@ -260,7 +279,7 @@ class Connection {
                     "justified (type=${colTypes[columnIndex]})"
         }
 
-        new FileWriter(m_fileOut, m_append).withWriter { writer ->
+        new FileWriter(m_fileOut, true).withWriter { writer ->
 
             // output column heading, limit heading width to field width as sql may not
             columnNames.eachWithIndex { var columnName, int columnIndex ->
@@ -306,9 +325,9 @@ class Connection {
     }
 
     void formatCSVResults(resultSet, columnNames) {
-        new FileWriter(m_fileOut, m_append).withWriter { writer ->
+        new FileWriter(m_fileOut, true).withWriter { writer ->
             new CSVPrinter(writer, CSVFormat.DEFAULT).with {
-                printRecord(columnNames)
+                if (m_csvHeaders) printRecord(columnNames)
                 resultSet.each { rowResult ->
                     printRecord(rowResult.values())
                 }
@@ -317,7 +336,7 @@ class Connection {
     }
 
     void formatXMLResults(resultSet, columnNames) {
-        new FileWriter(m_fileOut, m_append).withWriter { writer ->
+        new FileWriter(m_fileOut, true).withWriter { writer ->
             new MarkupBuilder(writer).with {
                 rows {
                     resultSet.eachWithIndex { var rowResult, int rowid ->
@@ -335,7 +354,7 @@ class Connection {
     }
 
     void formatHTMLResults(resultSet, columnNames) {
-        new FileWriter(m_fileOut, m_append).withWriter { writer ->
+        new FileWriter(m_fileOut, true).withWriter { writer ->
             new MarkupBuilder(writer).with {
                 table {
                     thead {
@@ -396,7 +415,7 @@ class Connection {
                 break
         }
 
-        new FileWriter(m_fileOut, m_append).withWriter { writer ->
+        new FileWriter(m_fileOut, true).withWriter { writer ->
             writer.write(json.toPrettyString())
             writer.write("\n")
         }

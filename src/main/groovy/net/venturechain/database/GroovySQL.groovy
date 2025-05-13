@@ -13,16 +13,17 @@ class GroovySQL {
     static void main(String[] args) {
 
         var cliOptions = new CliBuilder(usage: "groovysql [options]", posix: true,
-                header: "Groovy SQL Client CLI version 2.6 (${GroovySystem.version}/${Runtime.version()})\nOptions:")
+                header: "Groovy SQL Client CLI version 2.7 (${GroovySystem.version}/${Runtime.version()})\nOptions:")
 
         cliOptions.with {
             a(longOpt: 'append', 'output file append mode')
-            A(longOpt: 'authentication', 'specify filename', args: 1)  // TODO
+            A(longOpt: 'authentication', 'specify secrets vault', args: 1)
             c(longOpt: 'config', 'specify database configuration file', args: 1)
             d(longOpt: 'database', 'specify database name', args: 1)
             f(longOpt: 'filein', 'specify input filename', args: 1)
             o(longOpt: 'fileout', 'specify output filename', args: 1)
             F(longOpt: 'format', 'specify format', args: 1)
+            H(longOpt: 'csvheaders', 'output CSV headers')
             h(longOpt: 'help', 'usage information')
             i(longOpt: 'interactive', 'run in interactive mode')
             j(longOpt: 'jsonstyle', 'JSON style', args: 1)
