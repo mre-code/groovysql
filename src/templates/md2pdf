@@ -43,7 +43,7 @@ exit
 # 
 # Moved these to README.yaml:
 # 		--variable title="GroovySQL" \
-# 		--variable author="Version 2.6" \
+# 		--variable author="Version 2.7" \
 # 		--variable date="Oct 2024" \
 # 		--variable subject="SQL Client" \
 # 		--variable keywords="[ Groovy SQL ]" \
