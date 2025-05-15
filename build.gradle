@@ -97,3 +97,7 @@ tasks.register("myConfigurations") {
 tasks.withType(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
     mergeGroovyExtensionModules()
 }
+
+tasks.register("setAppVersion") {
+    File configFile = file('tests/test.sh')
+}

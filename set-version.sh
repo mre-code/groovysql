@@ -1,18 +1,12 @@
 #!/bin/bash
 
-# README.yaml:author: "Version 2.6"
-# 
-# gradle.properties:version=2.6
-# 
-# src/templates/md2pdf:# 		--variable author="Version 2.6"
-# 
-# src/main/groovy/net/venturechain/database/Connection.groovy:            displayOutput(1, "GroovySQL 2.6 powered by Groovy " +
-# 
-# src/main/groovy/net/venturechain/database/GroovySQL.groovy:                header: "Groovy SQL Client CLI version 2.6 ...
-# 
-# tests/.dev/mwe.md:author: "Version 2.6"
-# 
-# tests/test.sh:GROOVYSQL_VERSION=2.6
+function errexit { echo "ERROR: $*" ; exit 255 ; }
+
+function get_version {
+	STR=$1
+	FILE=$2
+	grep --with-filename "$STR" $FILE
+}
 
 function set_version {
 	OLD=$1
@@ -27,17 +21,46 @@ function set_version {
 
 }
 
-NEWVERSION=${1?Usage: $0 new-version}
+function update_version {
+	if [[ -d .git ]]
+	then NEWVERSION=$(gitversion -showvariable fullsemver 2>/dev/null)
+	else errexit "no .git directory found"
+	fi
 
-echo "setting version to $NEWVERSION"
+	if [[ $NEWVERSION ]]
+	then echo "setting version to $NEWVERSION"
+	else errexit "gitversion did not return a version"
+	fi
 
-set_version "Version 2.6" "Version $NEWVERSION" README.yaml
+	set_version "Version SEMANTIC_VERSION" "Version $NEWVERSION" README.yaml
+	set_version "version=SEMANTIC_VERSION" "version=$NEWVERSION" gradle.properties
+	set_version "GroovySQL SEMANTIC_VERSION" "GroovySQL $NEWVERSION" src/main/groovy/net/venturechain/database/Connection.groovy
+	set_version "version SEMANTIC_VERSION" "version $NEWVERSION" src/main/groovy/net/venturechain/database/GroovySQL.groovy
+	set_version "GROOVYSQL_VERSION=SEMANTIC_VERSION" "GROOVYSQL_VERSION=$NEWVERSION" tests/test.sh
+}
 
-set_version "version=2.6" "version=$NEWVERSION" gradle.properties
+function reset_version {
+	OLDVERSION="$1"
+	NEWVERSION=SEMANTIC_VERSION
 
-set_version "Version 2.6" "Version $NEWVERSION" src/templates/md2pdf
+	set_version "Version $OLDVERSION" "Version $NEWVERSION" README.yaml
+	set_version "version=$OLDVERSION" "version=$NEWVERSION" gradle.properties
+	set_version "GroovySQL $OLDVERSION" "GroovySQL $NEWVERSION" src/main/groovy/net/venturechain/database/Connection.groovy
+	set_version "version $OLDVERSION" "version $NEWVERSION" src/main/groovy/net/venturechain/database/GroovySQL.groovy
+	set_version "GROOVYSQL_VERSION=$OLDVERSION" "GROOVYSQL_VERSION=$NEWVERSION" tests/test.sh
+}
 
-set_version "GroovySQL 2.6" "GroovySQL $NEWVERSION" src/main/groovy/net/venturechain/database/Connection.groovy
+function show_version {
+	get_version "Version " README.yaml
+	get_version "version" gradle.properties
+	get_version "GroovySQL " src/main/groovy/net/venturechain/database/Connection.groovy
+	get_version "version " src/main/groovy/net/venturechain/database/GroovySQL.groovy
+	get_version "GROOVYSQL_VERSION=" tests/test.sh
+}
 
-set_version "version 2.6" "version $NEWVERSION" src/main/groovy/net/venturechain/database/GroovySQL.groovy
-
+case $1 in
+	show)	show_version ;;
+	update)	update_version ;;
+	reset)	reset_version "$2" ;;
+	*)	echo "Usage: $0 { show | update | reset }" ;;
+esac

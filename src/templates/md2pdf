@@ -39,21 +39,6 @@ fi
 
 exit
 
-# 		--variable header-includes:'\usepackage[export]{adjustbox} \let\includegraphicsbak\includegraphics \renewcommand*{\includegraphics}[2][]{\includegraphicsbak[frame,#1]{#2}}' \
-# 
-# Moved these to README.yaml:
-# 		--variable title="GroovySQL" \
-# 		--variable author="Version 2.7" \
-# 		--variable date="Oct 2024" \
-# 		--variable subject="SQL Client" \
-# 		--variable keywords="[ Groovy SQL ]" \
-# 		--variable lang="en" \
-# 		--variable listings-disable-line-numbers=true \
-# 		--variable listings-no-page-break=true \
-# 		--variable table-use-row-colors=true \
-# 		--variable geometry:margin=1in \
-# 		--variable linkcolor=blue \
-
 # LaTeX font sizes:
 # 
 # Command             10pt    11pt    12pt
