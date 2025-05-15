@@ -7,6 +7,24 @@
 MYNAME=$(basename $0)
 VERSION_REGEXP="[-_.A-Za-z0-9]+"
 
+# table of expression prefixes with filenames as keys,
+# with the version string or regexp appended to the value
+# as needed based on inquiry, set, or reset
+declare -A prefix=(
+	[README.yaml]="Version "
+	[gradle.properties]="version="
+	[src/main/groovy/net/venturechain/database/Connection.groovy]="GroovySQL "
+	[src/main/groovy/net/venturechain/database/GroovySQL.groovy]="version "
+	[tests/test.sh]="GROOVYSQL_VERSION="
+)
+
+function dump {
+	for FILE in ${!prefix[*]} # returns the array keys
+	do echo "$FILE......'${prefix[$FILE]}$VERSION_REGEXP'"
+	done
+	exit
+}
+
 function usage { pod2usage -verbose 0 $MYNAME ; exit 1 ; }
 
 function errexit { echo "ERROR: $*" ; exit 255 ; }
@@ -58,30 +76,25 @@ function update_version {
 	else errexit "gitversion did not return a version"
 	fi
 
-	set_version "Version $VERSION_REGEXP" "Version $NEWVERSION" README.yaml
-	set_version "version=$VERSION_REGEXP" "version=$NEWVERSION" gradle.properties
-	set_version "GroovySQL $VERSION_REGEXP" "GroovySQL $NEWVERSION" src/main/groovy/net/venturechain/database/Connection.groovy
-	set_version "version $VERSION_REGEXP" "version $NEWVERSION" src/main/groovy/net/venturechain/database/GroovySQL.groovy
-	set_version "GROOVYSQL_VERSION=$VERSION_REGEXP" "GROOVYSQL_VERSION=$NEWVERSION" tests/test.sh
+	for FILE in ${!prefix[*]} # returns the array keys
+	do set_version "${prefix[$FILE]}$VERSION_REGEXP" "${prefix[$FILE]}$NEWVERSION" $FILE
+	done
 }
 
 function reset_version {
 	NEWVERSION=SEMANTIC_VERSION
 
 	echo "setting version to $NEWVERSION"; echo
-	set_version "Version $VERSION_REGEXP" "Version $NEWVERSION" README.yaml
-	set_version "version=$VERSION_REGEXP" "version=$NEWVERSION" gradle.properties
-	set_version "GroovySQL $VERSION_REGEXP" "GroovySQL $NEWVERSION" src/main/groovy/net/venturechain/database/Connection.groovy
-	set_version "version $VERSION_REGEXP" "version $NEWVERSION" src/main/groovy/net/venturechain/database/GroovySQL.groovy
-	set_version "GROOVYSQL_VERSION=$VERSION_REGEXP" "GROOVYSQL_VERSION=$NEWVERSION" tests/test.sh
+
+	for FILE in ${!prefix[*]} # returns the array keys
+	do set_version "${prefix[$FILE]}$VERSION_REGEXP" "${prefix[$FILE]}$NEWVERSION" $FILE
+	done
 }
 
 function current_version {
-	get_version "Version " README.yaml
-	get_version "version" gradle.properties
-	get_version "GroovySQL " src/main/groovy/net/venturechain/database/Connection.groovy
-	get_version "version " src/main/groovy/net/venturechain/database/GroovySQL.groovy
-	get_version "GROOVYSQL_VERSION=" tests/test.sh
+	for FILE in ${!prefix[*]} # returns the array keys
+	do get_version "${prefix[$FILE]}" $FILE
+	done
 }
 
 while getopts :hmMH OPT
@@ -102,6 +115,7 @@ current)	current_version ;;
 update)		update_version ;;
 reset)		reset_version ;;
 new)		new_version ;;
+dump)		dump ;;
 *)		usage ;;
 esac
 
