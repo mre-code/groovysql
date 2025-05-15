@@ -4,6 +4,11 @@
 # https://semver.org
 # https://gitversion.net
 
+MYNAME=$(basename $0)
+VERSION_REGEXP="[-_.A-Za-z0-9]+"
+
+function usage { pod2usage -verbose 0 $MYNAME ; exit 1 ; }
+
 function errexit { echo "ERROR: $*" ; exit 255 ; }
 
 function get_version {
@@ -19,9 +24,25 @@ function set_version {
 	NEW="$2"
 	FILE="$3"
 	echo ">>> $FILE:"
-	sed --in-place "s/$OLD/$NEW/" $FILE
+	sed --in-place --regexp-extended "s/$OLD/$NEW/" $FILE
 	grep --line-number "$NEW" $FILE # | sed 's/^/>>>> /'
 	echo
+}
+
+function new_version {
+	BRANCH=$(git branch --show-current)
+
+	# easiest implementation requires that gitversion be run
+	# at the top of the git work tree (where the .git folder is)
+	if [[ -d .git ]]
+	then NEWVERSION=$(gitversion -showvariable fullsemver 2>/dev/null)
+	else errexit "no .git directory found"
+	fi
+
+	if [[ $NEWVERSION ]]
+	then echo "new version will be $NEWVERSION [branch = $BRANCH]"; echo
+	else errexit "gitversion did not return a version"
+	fi
 }
 
 function update_version {
@@ -37,26 +58,25 @@ function update_version {
 	else errexit "gitversion did not return a version"
 	fi
 
-	set_version "Version SEMANTIC_VERSION" "Version $NEWVERSION" README.yaml
-	set_version "version=SEMANTIC_VERSION" "version=$NEWVERSION" gradle.properties
-	set_version "GroovySQL SEMANTIC_VERSION" "GroovySQL $NEWVERSION" src/main/groovy/net/venturechain/database/Connection.groovy
-	set_version "version SEMANTIC_VERSION" "version $NEWVERSION" src/main/groovy/net/venturechain/database/GroovySQL.groovy
-	set_version "GROOVYSQL_VERSION=SEMANTIC_VERSION" "GROOVYSQL_VERSION=$NEWVERSION" tests/test.sh
+	set_version "Version $VERSION_REGEXP" "Version $NEWVERSION" README.yaml
+	set_version "version=$VERSION_REGEXP" "version=$NEWVERSION" gradle.properties
+	set_version "GroovySQL $VERSION_REGEXP" "GroovySQL $NEWVERSION" src/main/groovy/net/venturechain/database/Connection.groovy
+	set_version "version $VERSION_REGEXP" "version $NEWVERSION" src/main/groovy/net/venturechain/database/GroovySQL.groovy
+	set_version "GROOVYSQL_VERSION=$VERSION_REGEXP" "GROOVYSQL_VERSION=$NEWVERSION" tests/test.sh
 }
 
 function reset_version {
-	OLDVERSION="$1"
 	NEWVERSION=SEMANTIC_VERSION
 
 	echo "setting version to $NEWVERSION"; echo
-	set_version "Version $OLDVERSION" "Version $NEWVERSION" README.yaml
-	set_version "version=$OLDVERSION" "version=$NEWVERSION" gradle.properties
-	set_version "GroovySQL $OLDVERSION" "GroovySQL $NEWVERSION" src/main/groovy/net/venturechain/database/Connection.groovy
-	set_version "version $OLDVERSION" "version $NEWVERSION" src/main/groovy/net/venturechain/database/GroovySQL.groovy
-	set_version "GROOVYSQL_VERSION=$OLDVERSION" "GROOVYSQL_VERSION=$NEWVERSION" tests/test.sh
+	set_version "Version $VERSION_REGEXP" "Version $NEWVERSION" README.yaml
+	set_version "version=$VERSION_REGEXP" "version=$NEWVERSION" gradle.properties
+	set_version "GroovySQL $VERSION_REGEXP" "GroovySQL $NEWVERSION" src/main/groovy/net/venturechain/database/Connection.groovy
+	set_version "version $VERSION_REGEXP" "version $NEWVERSION" src/main/groovy/net/venturechain/database/GroovySQL.groovy
+	set_version "GROOVYSQL_VERSION=$VERSION_REGEXP" "GROOVYSQL_VERSION=$NEWVERSION" tests/test.sh
 }
 
-function show_version {
+function current_version {
 	get_version "Version " README.yaml
 	get_version "version" gradle.properties
 	get_version "GroovySQL " src/main/groovy/net/venturechain/database/Connection.groovy
@@ -64,9 +84,106 @@ function show_version {
 	get_version "GROOVYSQL_VERSION=" tests/test.sh
 }
 
+while getopts :hmMH OPT
+do
+	case $OPT in
+	h)      pod2usage -verbose 1 $MYNAME ; exit 0 ;;
+	m)      pod2usage -verbose 2 $MYNAME ; exit 0 ;;
+	M)      pod2man --release="2.1" --center="Development Documentation" $MYNAME ; exit 0 ;;
+	H)      pod2html --release="2.1" --center="Development Documentation" $MYNAME ; exit 0 ;;
+	:)      echo "$MYNAME: Option $OPTARG requires a value" >&2; exit 2 ;;
+	*)      usage;;
+	esac
+done
+shift $(( OPTIND - 1 ))
+
 case $1 in
-	show)	show_version ;;
-	update)	update_version ;;
-	reset)	reset_version "${2?"from-version required"}" ;;
-	*)	echo "Usage: $0 { show | update | reset }" ;;
+current)	current_version ;;
+update)		update_version ;;
+reset)		reset_version ;;
+new)		new_version ;;
+*)		usage ;;
 esac
+
+exit
+
+########################################
+
+=head1 NAME
+
+semantic_versioning.sh - manage semantic versioning
+
+=head1 SYNOPSIS
+
+    semantic_versioning.sh [-hm] { current | update | reset | new }
+
+=head1 DESCRIPTION
+
+Provides semantic versioning implementation.
+
+See L<https://semver.org> and L<https://gitversion.net> for background and more information.
+
+Intended usage is that all version references use the string "SEMANTIC_VERSION" as a placeholder
+for the generated version string.
+This placeholder can appear anywhere such as in quoted strings or comments.
+The update operation does a simple regex string replacement of the placeholder with the newly
+generated semantic version string generated by C<gitversion> based on the current git state.
+
+The development flow assumes that whenever compilation and/or packaging occurs,
+the git work tree is first updated with C<semantic_versioning.sh update> which replaces
+the placeholder with the newly generated semantic version string.
+Then the compilation and/or packaging takes place.
+And finally the version string is reset with C<semantic_versioning.sh reset>.
+Basically it just backs out the version string to the placeholder "SEMANTIC_VERSION".
+
+Step-wise the flow looks like,
+
+=over 4
+
+=item 1. git checkout desired branch (main, develop, feature, release, etc)
+
+Work tree contains files with placeholder version strings.
+
+=item 2. semantic_versioning.sh update
+
+Work tree contains files with semantically updated version strings (uncommitted).
+
+=item 3. compilation and/or packaging
+
+Binaries and packages contain version-stamped files.
+
+=item 4. semantic_versioning.sh reset
+
+Work tree (again) contains files with placeholder version strings.
+Git no longer identifies any files as uncommitted since they are back to their original state.
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item -h
+
+Display this help information.
+
+=back
+
+=head1 EXAMPLES
+
+To display the new version that will be generated,
+
+    semantic_versioning.sh new
+
+To display the current version,
+
+    semantic_versioning.sh current
+
+To update the current work tree with the new version,
+
+    semantic_versioning.sh update
+
+To reset the current work tree back to its unversioned state,
+
+    semantic_versioning.sh reset
+
