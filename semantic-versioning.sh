@@ -20,7 +20,7 @@ declare -A prefix=(
 
 function dump {
 	for FILE in ${!prefix[*]} # returns the array keys
-	do echo "$FILE......'${prefix[$FILE]}$VERSION_REGEXP'"
+	do echo "in $FILE...looking for...'${prefix[$FILE]}$VERSION_REGEXP'"
 	done
 	exit
 }
