@@ -1,6 +1,7 @@
 *.zip
 .idea-backup/
 log4j-example
+tests/.snowflake
 
 .gradle
 build/
