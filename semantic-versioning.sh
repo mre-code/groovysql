@@ -5,7 +5,7 @@
 # https://gitversion.net
 
 MYNAME=$(basename $0)
-VERSION_REGEXP="[-_.A-Za-z0-9]+"
+VERSION_REGEXP="[-_.A-Za-z0-9+]+"
 
 # table of expression prefixes with filenames as keys,
 # with the version string or regexp appended to the value
