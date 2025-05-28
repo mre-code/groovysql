@@ -35,9 +35,8 @@ is built using Gradle and can be modified and rebuilt following these steps:
 2. Change directory into the cloned repo (cd groovysql)
 3. Make changes as needed
 4. Execute the Gradle wrapper (./gradlew shadowJar)
-5. cp ./build/libs/groovysql-x.y-all.jar /usr/local/bin/groovysql.jar
-6. cp ./src/main/bin/groovysql /usr/local/bin/groovysql
-7. chown 755 /usr/local/bin/groovysql
+5. cp ./src/main/bin/groovysql ./build/libs/groovysql-x.y-all.jar /usr/local/bin/
+6. chown 755 /usr/local/bin/groovysql
 
 The Gradle wrapper (gradlew) will take care of downloading and installing the right version of Gradle, compiling
 everything, and putting together the final jar file as `./build/libs/groovysql-x.y-all.jar`, where x.y represents the
@@ -45,8 +44,9 @@ current version of GroovySQL.
 
 ## Running GroovySQL
 
-GroovySQL is deployed as two files, groovysql (shell wrapper) and groovysql.jar (groovysql and all of its dependencies),
-to a location in the execution path ($PATH). This allows groovysql to be run from the command line and/or batch.
+GroovySQL is deployed as two files, groovysql (shell wrapper) and groovysql-x.y-all.jar (groovysql and all of its
+dependencies), to a location in the execution path (`$PATH`). This allows groovysql to be run from the command line
+and/or batch.
 
 The groovysql shell wrapper accepts all groovysql options and adds the Java options to work around the Java
 encapsulation introduced with the Java Modular System (JEP261) in Java 9 and increasingly enforced with newer Java
