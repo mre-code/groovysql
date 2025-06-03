@@ -58,7 +58,7 @@ dependencies {
     implementation 'com.mysql:mysql-connector-j:8.4.0'
     implementation 'org.xerial:sqlite-jdbc:3.46.0.1'
     implementation 'com.azure.resourcemanager:azure-resourcemanager-keyvault:2.44.0'
-    implementation name: 'snowflake-jdbc'
+    implementation name: 'snowflake-jdbc-3.24.2'
     implementation name: 'denodo-vdp-jdbcdriver'
 
     // used by gradle (only) to integrate with maven

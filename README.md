@@ -128,6 +128,7 @@ Specify authentication using various secrets management systems. Currently suppo
     Azure KeyVault ................ azure:key-vault-name:key
     Google Secret Manager ......... gcp:secret-name
     AWS Secrets Manager ........... aws:secret-id
+    KeyPair ....................... keypair:~/.keys/rsa-key.p8
 
 ### `-c|--config <arg>`
 
@@ -294,13 +295,14 @@ or [jq(1)](https://jqlang.github.io/jq/manual/) for postprocessing.
 Config files are optional files containing database connection parameters for a given database. They are written
 in [TOML format](https://toml.io/en/) and support the following parameters:
 
-    dbUser      - database username
-    dbPassword  - database password
-    dbScheme    - JDBC scheme (see Schemes)
-    dbHost      - TCP network address (hostname:port)
-    dbName      - database name
-    dbOptions   - database options added to the database URL (see Examples)
-    dbClass     - database driver class name (defaults based on dbScheme)
+    dbUser           - database username
+    dbPassword       - database password
+    dbAuthentication - authentication style
+    dbScheme         - JDBC scheme (see Schemes)
+    dbHost           - TCP network address (hostname:port)
+    dbName           - database name
+    dbOptions        - database options added to the database URL (see Examples)
+    dbClass          - database driver class name (defaults based on dbScheme)
 
 Most of these parameters can also be specified through their own option, e.g. `--user` for dbUser, `--node` for dbHost,
 etc. None of the parameters is required in a Config file. If an option appears in a Config file and also is specified on
@@ -308,6 +310,14 @@ the command line then the command line setting overrides, leaving the Config fil
 
 The dbClass parameter is entirely optional as the dbScheme will automatically set a default dbClass. Setting dbClass
 will override the default. There is no command line option to set dbClass.
+
+The dbAuthentication parameter supports various authentication approaches and is formatted as a colon-separated string 
+as follows:
+
+     azure:key-vault-name:key
+     gcp:secret-name
+     aws:secret-id
+     keypair:<private-key-file-name>
 
 A common use case is to use a Config file with dbScheme, dbHost, dbName, and dbOptions specified and leverage the
 `--authentication` option to handle the authentication aspect.

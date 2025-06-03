@@ -22,6 +22,8 @@ import org.jline.terminal.TerminalBuilder
 import org.jline.widget.AutopairWidgets
 
 import java.sql.SQLException
+import java.nio.file.Files
+import java.nio.file.Paths
 
 class Connection {
 
@@ -69,11 +71,11 @@ class Connection {
 
     void displayOutput(Double level, messageObject) {
         String theLevel = String.valueOf(level)
-        Integer displayLevel = theLevel.substring(0,theLevel.indexOf(".")) as Integer
-        Integer displayIndent = theLevel.substring(theLevel.indexOf(".")+1) as Integer
+        Integer displayLevel = theLevel.substring(0, theLevel.indexOf(".")) as Integer
+        Integer displayIndent = theLevel.substring(theLevel.indexOf(".") + 1) as Integer
         if (Math.abs(m_verbose) >= displayLevel) {
             String message = messageObject
-            message.replaceAll("\t","    ").split('\n').each { String fragment ->
+            message.replaceAll("\t", "    ").split('\n').each { String fragment ->
                 if (m_timestamps) print "${timestamp()} :: "
                 println " " * displayIndent + fragment
             }
@@ -139,6 +141,7 @@ class Connection {
             m_dbConfig = new TomlSlurper().parse(new File(m_dbConfigFile))
             m_dbUser = m_dbConfig.dbUser
             m_dbPassword = m_dbConfig.dbPassword
+            m_authentication = m_dbConfig.dbAuthentication
             m_dbScheme = m_dbConfig.dbScheme
             m_dbHost = m_dbConfig.dbHost
             m_dbName = m_dbConfig.dbName
@@ -197,26 +200,37 @@ class Connection {
         }
 
         switch (m_authentication) {
-            case ~/azure:/:
+            case ~/azure:.*/:
 //                AzureProfile profile = new AzureProfile(AzureEnvironment.AZURE);
 //                TokenCredential credential = new DefaultAzureCredentialBuilder()
 //                        .authorityHost(profile.getEnvironment().getActiveDirectoryEndpoint())
 //                        .build();
 //                KeyVaultManager manager = KeyVaultManager
 //                        .authenticate(credential, profile);
+                displayOutput(2, "azure keyvault authentication")
                 break
-            case ~/gcp:/:
+            case ~/gcp:.*/:
+                displayOutput(2, "gcp secrets manager authentication")
                 break
-            case ~/aws:/:
+            case ~/aws:.*/:
+                displayOutput(2, "aws secrets authentication")
                 break
+            case ~/keypair:.*/:
+                m_connectionParameters = [
+                        url       : "${m_dbUrl}${m_dbOptions}",
+                        driver    : m_dbClass,
+                        properties: (Properties) [user: m_dbUser, private_key_file: m_authentication.split(':')[1]]
+                ]
+                displayOutput(2, "keypair authentication with private_key_file = " + m_authentication.split(":")[1])
+                break
+            default:
+                m_connectionParameters = [
+                        url     : "${m_dbUrl}${m_dbOptions}",
+                        user    : m_dbUser,
+                        password: m_dbPassword,
+                        driver  : m_dbClass
+                ]
         }
-
-        m_connectionParameters = [
-                url     : "${m_dbUrl}${m_dbOptions}",
-                user    : m_dbUser,
-                password: m_dbPassword,
-                driver  : m_dbClass
-        ]
 
         if (!options.testconnect) {
             displayOutput(1, "opening connection to ${m_dbUrl}")
@@ -231,7 +245,7 @@ class Connection {
             } catch (SQLException sqlException) {
                 displayOutput(0, ">>> ERROR: unable to open dbconnection to ${m_dbUrl}:")
                 displayOutput(0.4, sqlException)
-                displayOutput(0.4, "user=${m_dbUser}, word=${m_dbPassword.take(1)}****${m_dbPassword.reverse().take(1).reverse()}")
+                displayOutput(0.4, "user=${m_dbUser}")
                 System.exit(1)
             }
         }
@@ -535,7 +549,8 @@ class Connection {
                 if (m_verbose >= 3) displayOutput(3, sprintf('input line %2d: %s', lineNumber, line))
                 if (line.startsWith(".")) {
                     displayOutput(3, ">>> line $lineNumber: CONTROL RECORD: $line")
-                    if (m_sqlStatement != "") errorExit("(line $lineNumber) discarding unterminated SQL = $m_sqlStatement")
+                    if (m_sqlStatement != "")
+                        errorExit("(line $lineNumber) discarding unterminated SQL = $m_sqlStatement")
 
                     processCommandInput(line)
 
@@ -594,7 +609,9 @@ class Connection {
                     break
                 }
             } catch (exception) {
-                if (exception == EndOfFileException) { println "eof"; return }   //FIXME
+                if (exception == EndOfFileException) {
+                    println "eof"; return
+                }   //FIXME
             }
 
             reader.getHistory().add(line)
