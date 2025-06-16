@@ -91,7 +91,7 @@ GROOVYBASE=$PROJECTBASE/src/main/groovy
 TESTBASE=$PROJECTBASE/tests
 RUNFORMAT=classfiles
 GROOVY_HOME=/usr/local/sdkman/candidates/groovy/current
-GROOVYSQL_VERSION=2.9.0-release.1+2
+GROOVYSQL_VERSION=2.9.0-alpha.8
 PATH=$GROOVY_HOME/bin:$PATH
 
 trap "exit 255" 1 2 3 15
