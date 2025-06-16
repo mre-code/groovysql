@@ -8,7 +8,8 @@ VERSION=2.9.0-release.1+2
 
 BINDIR=$(dirname $0)
 
-JAVA_ENCAPSULATION_OPTIONS="--add-opens=java.base/java.nio=ALL-UNNAMED	\
+JAVA_ENCAPSULATION_OPTIONS="-Dnet.snowflake.jdbc.enableBouncyCastle=TRUE \
+--add-opens=java.base/java.nio=ALL-UNNAMED	\
 --add-opens=java.base/java.util=ALL-UNNAMED	\
 --add-opens=java.base/java.lang=ALL-UNNAMED	\
 --add-opens=java.base/java.lang.invoke=ALL-UNNAMED	\

@@ -22,8 +22,6 @@ import org.jline.terminal.TerminalBuilder
 import org.jline.widget.AutopairWidgets
 
 import java.sql.SQLException
-import java.nio.file.Files
-import java.nio.file.Paths
 
 class Connection {
 
@@ -216,12 +214,17 @@ class Connection {
                 displayOutput(2, "aws secrets authentication")
                 break
             case ~/keypair:.*/:
+                def (_, keyFile, keyPassword) = m_authentication.split(':') as List
+                def props = [user: m_dbUser, private_key_file: keyFile]
+                if (keyPassword) {
+                    props.private_key_pwd = keyPassword
+                }
                 m_connectionParameters = [
                         url       : "${m_dbUrl}${m_dbOptions}",
                         driver    : m_dbClass,
-                        properties: (Properties) [user: m_dbUser, private_key_file: m_authentication.split(':')[1]]
+                        properties: props as Properties
                 ]
-                displayOutput(2, "keypair authentication with private_key_file = " + m_authentication.split(":")[1])
+                displayOutput(2, "keypair authentication with private_key_file = ${keyFile}")
                 break
             default:
                 m_connectionParameters = [
