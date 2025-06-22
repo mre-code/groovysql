@@ -91,8 +91,8 @@ through other mechanisms, e.g. file redirection, etc.
 Either the short or long option can be used, with the < arg> supplied as needed.
 
 The `--config` option allows the database connection information to be stored in a configuration file and supplied as a
-single option for convenience. It is shorthand for specifying the `--scheme`, `--node`, `--database`, `--user`, and
-`--password` options.
+single option for convenience. It is handy for specifying the `--scheme`, `--node`, `--database`, `--user`, and
+`--password` options, as well as other options.
 
 | short | long option              | description                                    |
 |:-----:|--------------------------|------------------------------------------------|
