@@ -107,54 +107,59 @@ class Connection {
 
     Connection(OptionAccessor options) {
 
-        m_dbUser = options.user
-        m_dbPassword = options.password
-        m_dbName = options.database
-        m_dbHost = options.node
-        m_dbScheme = options.scheme
-        m_authentication = options.authentication
-
         m_dbConfigFile = options.config
 
+        // load defaults from config file
+        if (m_dbConfigFile) {
+            m_dbConfig = new TomlSlurper().parse(new File(m_dbConfigFile))
+            m_dbUser = m_dbConfig?.dbUser
+            m_dbPassword = m_dbConfig?.dbPassword
+            m_dbHost = m_dbConfig?.dbHost
+            m_dbScheme = m_dbConfig?.dbScheme
+            m_dbName = m_dbConfig?.dbName
+            m_authentication = m_dbConfig?.dbAuthentication
+            m_timestamps = m_dbConfig?.timestamps
+            m_csvHeaders = m_dbConfig?.csvheaders ?: true
+            m_jsonStyle = m_dbConfig?.jsonstyle ?: "standard"
+            m_format = m_dbConfig?.format ?: "text"
+            m_width = m_dbConfig?.width ?: 30
+            m_append = m_dbConfig?.append
+            m_verbose = m_dbConfig?.verbose
+            m_dbOptions = m_dbConfig?.dbOptions?.collect { it.value }?.join('&')
+            m_dbClass = m_dbConfig?.dbClass
+        }
+
+        // command line overrides any config file defaults
+        m_dbUser = options.user ?: m_dbUser
+        m_dbPassword = options.password ?: m_dbPassword
+        m_dbHost = options.node ?: m_dbHost
+        m_dbScheme = options.scheme ?: m_dbScheme
+        m_dbName = options.database ?: m_dbName
+        m_authentication = options.authentication ?: m_authentication
+        m_timestamps = options.timestamps ?: m_timestamps
+        m_csvHeaders = options.csvheaders ?: m_csvHeaders
+        m_jsonStyle = options.jsonstyle ?: (m_jsonStyle ?: "quoted")
+        m_format = (options.format ?: m_format).toLowerCase()
+        m_width = options.width ?: m_width
+        m_verbose = options.verbose ?: m_verbose
+
+        // no config file settings
+        m_fileIn = options.filein ?: "/dev/stdin"
+        m_fileOut = options.fileout ?: "/dev/stdout"
+
         m_sqlStatement = (options.sql ?: "") as String
-
-        m_timestamps = (options.timestamps ?: false)
-
-        m_fileIn = (options.filein ?: "/dev/stdin")
-        m_fileOut = (options.fileout ?: "/dev/stdout")
-        m_append = options.append
-
-        m_csvHeaders = options.csvheaders
-        m_jsonStyle = (options.jsonstyle ?: "quoted")
-        m_format = (options.format ?: "text").toLowerCase()
-        m_width = (options.width ?: 30)
-
-        m_verbose = options.verbose
 
         m_returnCode = 0
 
         Sql.LOG.level = java.util.logging.Level.OFF     // turn off groovy.sql default logging
 
-        if (m_dbConfigFile) {
-            m_dbConfig = new TomlSlurper().parse(new File(m_dbConfigFile))
-            m_dbUser = m_dbConfig.dbUser
-            m_dbPassword = m_dbConfig.dbPassword
-            m_authentication = m_dbConfig.dbAuthentication
-            m_dbScheme = m_dbConfig.dbScheme
-            m_dbHost = m_dbConfig.dbHost
-            m_dbName = m_dbConfig.dbName
-            m_dbClass = m_dbConfig.dbClass
-            m_dbOptions = m_dbConfig.dbOptions.collect { it.value }.join('&')
-        }
-
         switch (m_dbScheme) {
             case "vdb":
             case "denodo":
-                m_dbClass = m_dbClass ?: "com.denodo.vdp.jdbc.Driver"
-                m_dbOptions = m_dbOptions ?:
-                        "queryTimeout=0" +                              // 0 ms = infinite
-                                "&chunkTimeout=1000" +                  // fetch flush @ 10 secs
-                                "&chunkSize=5000"                       // fetch flush @ 500 rows
+                m_dbClass ?= "com.denodo.vdp.jdbc.Driver"
+                m_dbOptions ?= "queryTimeout=0" +               // 0 ms = infinite
+                        "&chunkTimeout=1000" +                  // fetch flush @ 10 secs
+                        "&chunkSize=5000"                       // fetch flush @ 500 rows
                 m_dbOptions = "?" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 m_dbDriverVersion = "Denodo JDBC " +
@@ -162,28 +167,28 @@ class Connection {
                                 "VDBJDBCDatabaseMetadata.driverVersion", "VDBJDBCDatabaseMetadata.driverUpdateVersion")
                 break
             case "snowflake":
-                m_dbClass = m_dbClass ?: "net.snowflake.client.jdbc.SnowflakeDriver"
-                m_dbName = "?db=${m_dbName}"
-                m_dbOptions = m_dbOptions ?: "queryTimeout=0"
+                m_dbClass ?= "net.snowflake.client.jdbc.SnowflakeDriver"
+                m_dbName = m_dbName ? "?db=${m_dbName}" : null
+                m_dbOptions ?= "queryTimeout=0"
                 m_dbOptions = "&" + m_dbOptions
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 m_dbDriverVersion = "Snowflake JDBC " +
                         getDbDriverVersion("net/snowflake/client/jdbc/version.properties", "version")
                 break
             case "postgresql":
-                m_dbClass = m_dbClass ?: "org.postgresql.Driver"
+                m_dbClass ?= "org.postgresql.Driver"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 var driver = new org.postgresql.Driver()
                 m_dbDriverVersion = "Postgres JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
                 break
             case "mysql":
-                m_dbClass = m_dbClass ?: "com.mysql.cj.jdbc.Driver"
+                m_dbClass ?= "com.mysql.cj.jdbc.Driver"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 var driver = new com.mysql.cj.jdbc.Driver()
                 m_dbDriverVersion = "MySQL JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
                 break
             case "sqlite":
-                m_dbClass = m_dbClass ?: "org.sqlite.JDBC"
+                m_dbClass ?= "org.sqlite.JDBC"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 var driver = new org.sqlite.JDBC()
                 m_dbDriverVersion = "SQLite3 JDBC ${driver.getMajorVersion()}.${driver.getMinorVersion()}"
