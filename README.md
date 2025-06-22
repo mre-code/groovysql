@@ -24,7 +24,8 @@ them in a location within your execution path (`$PATH`). GroovySQL does not requ
 Java. All other requirements are self-contained in the GroovySQL jar file. In particular there is no requirement to
 install Groovy or any database drivers, GroovySQL will locate all those artifacts in its jar file at runtime. The jar
 file is not extracted or installed anywhere. Recommendation is to copy both files to `/usr/local/bin`, provided it is in
-the execution path (`$PATH`).
+the execution path (`$PATH`). The groovysql jar contains the Denodo, Snowflake, Postgres, MySQL, and SQLite database 
+drivers.
 
 ## Building GroovySQL
 
@@ -119,11 +120,14 @@ single option for convenience. It is shorthand for specifying the `--scheme`, `-
 ### `-a|--append`
 
 Normally GroovySQL will abort and refuse to overwrite an existing file. With the `--append` option GroovySQL will append
-output to the existing file instead.
+output to the existing file instead. Default value can be set in config file as `append`.
 
 ### `-A|--authentication <arg>`
 
-Specify authentication using various secrets management systems. Currently supported authentication stores are:
+Specify authentication using various secrets management systems. Default value can be set in config file as
+`dbAuthentication`.
+
+Currently supported authentication stores are:
 
     Azure KeyVault ................ azure:key-vault-name:key
     Google Secret Manager ......... gcp:secret-name
@@ -139,8 +143,7 @@ added advantage that the connection details are not visible through system monit
 
 ### `-d|--database <arg>`
 
-Specifies the database name to connect to. Can also be specified through a config file as dbName (see `--config`
-option).
+Specifies the database name to connect to. Default value can be set in config file as `dbName`.
 
 ### `-f|--filein <arg>`
 
@@ -149,7 +152,7 @@ directives, see [Directives](#directives).
 
 ### `-F|--format <arg>`
 
-Specify desired output format. Valid formats are:
+Specify desired output format. Default value can be set in config file as `format`. Valid formats are:
 
     text
     csv
@@ -159,7 +162,8 @@ Specify desired output format. Valid formats are:
 
 ### `-H|--csvheaders`
 
-Specifies column headers should be generated for CSV output.  By default CSV output does not include column headers.
+Specifies column headers should be generated for CSV output. Default value can be set in config file as `csvheaders`. If
+not set in config file or command line option then csvheaders defaults to false.
 
 ### `-h|--help`
 
@@ -173,16 +177,16 @@ Run in interactive mode with editing and history support provided by the jline3 
 
 Specify JSON style of "quoted" or "standard" for numeric values. The
 [JSON standard](https://www.rfc-editor.org/rfc/rfc8259) requires that JSON keys be quoted, however it supports numeric
-values (which are not quoted). With business data processing it is sometimes preferable to quote all values as well, as
-that avoids any issues with non-compliant numeric values such as "not a number" (NaN), etc. The default style that
-GroovySQL uses is to quote all values (`--jsonstyle=quoted`).
+values and nulls (neither of which are quoted). With business data processing it is sometimes preferable to quote all
+values as well, as that avoids any issues with non-compliant numeric values such as "not a number" (NaN), etc. 
+Default value can be set in config file as `jsonstyle`.
 
 ### `-n|--node <arg>`
 
 Specify database node/host name, optionally including a port specification. Node/host names can be any valid TCP/IP
 specification - numeric IP address, "localhost", simple hostnames, or fully qualified domain names. Optionally the
-node/host name can be followed by a colon and port specification, e.g. "localhost:9999". Can also be specified through a
-config file as dbHost (see `--config` option).
+node/host name can be followed by a colon and port specification, e.g. "localhost:9999". Default value can be set in 
+config file as `dbHost`.
 
 ### `-o|--fileout <arg>`
 
@@ -191,12 +195,11 @@ already exists then see the `--append` option for controlling the behavior in th
 
 ### `-p|--password <arg>`
 
-Specify database password. Can also be specified through a config file as dbPassword (see `--config` option).
+Specify database password. Default value can be set in config file as `dbPassword`.
 
 ### `-s|--scheme <arg>`
 
-Database scheme, see [Schemes](#schemes). Can also be specified through a config file as dbScheme (see `--config`
-option).
+Database scheme, see [Schemes](#schemes). Default value can be set in config file as `dbScheme`.
 
 ### `-S|--sql <arg>`
 
@@ -204,7 +207,8 @@ Specify a SQL statement to be executed.
 
 ### `-t|--timestamps`
 
-Timestamp all output messages, resultSets are excluded (of course).
+Timestamp all output messages, resultSets are excluded (of course). Default value can be set in config file as 
+`timestamps`.
 
 ### `-T|--testconnect <arg>`
 
@@ -213,7 +217,7 @@ Run a connection test, arg is `N@W`. Diagnostic scenarios can benefit from addin
 
 ### `-u|--user <arg>`
 
-Specify database username. Can also be specified through a config file as dbUser (see `--config` option).
+Specify database username. Default value can be set in config file as `dbUser`.
 
 ### `-v|--verbose <arg>`
 
@@ -221,8 +225,9 @@ Specify verbose level. See [Verbose Levels](#verbose-levels) for details.
 
 ### `-w|--width <arg>`
 
-Limit maximum text column width. When using the `--format text` option, this option limits the displayed column width.
-The default column width is 30. Column width settings can also be controlled through the `.width` control record
+Limit maximum text column width. When using the `--format text` option, this option limits the displayed column 
+width. Default value can be set in config file as `width`. If not set anywhere then the default column width is 30. 
+Column width settings can also be controlled through the `.width` control record
 directive (see [Directives](#directives)).
 
 ## Schemes
@@ -246,7 +251,8 @@ The dbClass for the connection defaults to the standard DriverManager class base
     mysql ......................... com.mysql.cj.jdbc.Driver
     sqlite ........................ org.sqlite.JDBC
 
-In nonstandard situations the dbClass can be overridden through the Config file, typically for database driver debugging.
+In nonstandard situations the dbClass can be overridden through the Config file, typically for database driver
+debugging.
 
 ## Usage
 
@@ -311,7 +317,7 @@ the command line then the command line setting overrides, leaving the Config fil
 The dbClass parameter is entirely optional as the dbScheme will automatically set a default dbClass. Setting dbClass
 will override the default. There is no command line option to set dbClass.
 
-The dbAuthentication parameter supports various authentication approaches and is formatted as a colon-separated string 
+The dbAuthentication parameter supports various authentication approaches and is formatted as a colon-separated string
 as follows:
 
      azure:key-vault-name:key
