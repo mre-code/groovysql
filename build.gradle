@@ -95,6 +95,7 @@ tasks.register("myConfigurations") {
 
 // had to fully qualify this after switching to GradleUp/shadow 8.3.0
 tasks.withType(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    zip64 true
     mergeGroovyExtensionModules()
 }
 
