@@ -119,11 +119,10 @@ class Connection {
             m_dbName = m_dbConfig?.dbName
             m_authentication = m_dbConfig?.dbAuthentication
             m_timestamps = m_dbConfig?.timestamps
-            m_csvHeaders = m_dbConfig?.csvheaders ?: true
+            m_csvHeaders = m_dbConfig?.csvheaders
             m_jsonStyle = m_dbConfig?.jsonstyle ?: "standard"
             m_format = m_dbConfig?.format ?: "text"
             m_width = m_dbConfig?.width ?: 30
-            m_append = m_dbConfig?.append
             m_verbose = m_dbConfig?.verbose
             m_dbOptions = m_dbConfig?.dbOptions?.collect { it.value }?.join('&')
             m_dbClass = m_dbConfig?.dbClass
@@ -141,7 +140,11 @@ class Connection {
         m_jsonStyle = options.jsonstyle ?: (m_jsonStyle ?: "quoted")
         m_format = (options.format ?: m_format).toLowerCase()
         m_width = options.width ?: m_width
-        m_verbose = options.verbose ?: m_verbose
+        if (options.verbose != -1) {
+            m_verbose = options.verbose
+        } else {
+            m_verbose ?= -1
+        }
 
         // no config file settings
         m_fileIn = options.filein ?: "/dev/stdin"
@@ -198,7 +201,7 @@ class Connection {
         }
 
         if (Math.abs(m_verbose) >= 1) {
-            displayOutput(1, "GroovySQL 2.9.0-alpha.8 powered by Groovy " +
+            displayOutput(1, "GroovySQL SEMANTIC_VERSION powered by Groovy " +
                     "${GroovySystem.version}/${Runtime.version()} with ${m_dbDriverVersion}")
         }
 

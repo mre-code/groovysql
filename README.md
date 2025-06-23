@@ -120,7 +120,7 @@ single option for convenience. It is handy for specifying the `--scheme`, `--nod
 ### `-a|--append`
 
 Normally GroovySQL will abort and refuse to overwrite an existing file. With the `--append` option GroovySQL will append
-output to the existing file instead. Default value can be set in config file as `append`.
+output to the existing file instead.
 
 ### `-A|--authentication <arg>`
 
@@ -288,7 +288,7 @@ GroovySQL supports various verbose levels as well as a timestamp option for runt
 
     level 0 - no messages (except data of course)
     level 1 - basic messages (version info, open/close - default)
-    level 2 - enhanced messages (adds open/close success, query audit)
+    level 2 - enhanced messages (adds open/close success, authentication info, query audit)
     level 3 - debug messages (adds input trace, text format field adjustments)
     level 4 - debug messages (adds system.properties display)
 
@@ -328,8 +328,8 @@ as follows:
 A common use case is to use a Config file with dbScheme, dbHost, dbName, and dbOptions specified and leverage the
 `--authentication` option to handle the authentication aspect.
 
-When using simple user/password directly, the use of Config files keeps passwords off of system monitors and is
-recommended.
+When using simple user/password or authentication passphrases, the use of Config files keeps passwords and passphrases
+off of system monitors and is recommended.
 
 Config files are TOML formatted and therefore support comments (#) as is customary.
 
