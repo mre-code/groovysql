@@ -123,12 +123,12 @@ class Connection {
             m_jsonStyle = m_dbConfig?.jsonstyle ?: "standard"
             m_format = m_dbConfig?.format ?: "text"
             m_width = m_dbConfig?.width ?: 30
-            m_verbose = m_dbConfig?.verbose
+            m_verbose = m_dbConfig?.verbose ?: -1
             m_dbOptions = m_dbConfig?.dbOptions?.collect { it.value }?.join('&')
             m_dbClass = m_dbConfig?.dbClass
         }
 
-        // command line overrides any config file defaults
+        // command line option overrides config file default
         m_dbUser = options.user ?: m_dbUser
         m_dbPassword = options.password ?: m_dbPassword
         m_dbHost = options.node ?: m_dbHost
@@ -142,8 +142,6 @@ class Connection {
         m_width = options.width ?: m_width
         if (options.verbose != -1) {
             m_verbose = options.verbose
-        } else {
-            m_verbose ?= -1
         }
 
         // no config file settings
@@ -163,7 +161,7 @@ class Connection {
                 m_dbOptions ?= "queryTimeout=0" +               // 0 ms = infinite
                         "&chunkTimeout=1000" +                  // fetch flush @ 10 secs
                         "&chunkSize=5000"                       // fetch flush @ 500 rows
-                m_dbOptions = "?" + m_dbOptions
+                m_dbOptions = "?${m_dbOptions}"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 m_dbDriverVersion = "Denodo JDBC " +
                         getDbDriverVersion("conf/DriverConfig.properties",
@@ -173,7 +171,7 @@ class Connection {
                 m_dbClass ?= "net.snowflake.client.jdbc.SnowflakeDriver"
                 m_dbName = m_dbName ? "?db=${m_dbName}" : null
                 m_dbOptions ?= "queryTimeout=0"
-                m_dbOptions = "&" + m_dbOptions
+                m_dbOptions = "&${m_dbOptions}"
                 m_dbUrl = "jdbc:${m_dbScheme}://${m_dbHost}/${m_dbName}"
                 m_dbDriverVersion = "Snowflake JDBC " +
                         getDbDriverVersion("net/snowflake/client/jdbc/version.properties", "version")
@@ -223,10 +221,14 @@ class Connection {
                 break
             case ~/keypair:.*/:
                 def (_, keyFile, keyPassword) = m_authentication.split(':') as List
+                if (!new File(keyFile).canRead()) {
+                    throw new IllegalArgumentException("unable to read private key file: ${keyFile}")
+                }
                 def props = [user: m_dbUser, private_key_file: keyFile]
                 if (keyPassword) {
                     props.private_key_pwd = keyPassword
                 }
+                m_dbOptions ?= ""
                 m_connectionParameters = [
                         url       : "${m_dbUrl}${m_dbOptions}",
                         driver    : m_dbClass,
@@ -235,6 +237,7 @@ class Connection {
                 displayOutput(2, "keypair authentication with private_key_file = ${keyFile}")
                 break
             default:
+                m_dbOptions ?= ""
                 m_connectionParameters = [
                         url     : "${m_dbUrl}${m_dbOptions}",
                         user    : m_dbUser,
@@ -246,7 +249,7 @@ class Connection {
         if (!options.testconnect) {
             displayOutput(1, "opening connection to ${m_dbUrl}")
 
-            m_dbOptions.tokenize('?&').each {
+            m_dbOptions?.tokenize('?&')?.each {
                 displayOutput(2, "dbOptions: $it")
             }
 
@@ -270,7 +273,7 @@ class Connection {
 
     void flap(frequency) {
         displayOutput(1, "testing connection to ${m_dbUrl}")
-        m_dbOptions.tokenize('?&').each {
+        m_dbOptions?.tokenize('?&')?.each {
             displayOutput(2, "dbOptions: $it")
         }
         List tokens = frequency.split("@")
