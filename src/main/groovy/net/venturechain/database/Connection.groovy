@@ -224,9 +224,10 @@ class Connection {
                 if (!new File(keyFile).canRead()) {
                     throw new IllegalArgumentException("unable to read private key file: ${keyFile}")
                 }
-                def props = [user: m_dbUser, private_key_file: keyFile]
+                def props = [user: m_dbUser, private_key_file: keyFile, private_key_security: "unencrypted" ]
                 if (keyPassword) {
                     props.private_key_pwd = keyPassword
+                    props.private_key_security = "encrypted"
                 }
                 m_dbOptions ?= ""
                 m_connectionParameters = [
@@ -234,7 +235,7 @@ class Connection {
                         driver    : m_dbClass,
                         properties: props as Properties
                 ]
-                displayOutput(2, "keypair authentication with private_key_file = ${keyFile}")
+                displayOutput(2, "keypair authentication with ${props.private_key_security} private_key_file = ${keyFile}")
                 break
             default:
                 m_dbOptions ?= ""

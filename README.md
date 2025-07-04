@@ -21,11 +21,11 @@ leveraging the [jline3 library](https://jline.github.io/).
 
 The simplest approach to deploying GroovySQL is to download the latest shell and jar file from the Releases and place
 them in a location within your execution path (`$PATH`). GroovySQL does not require anything to be installed other than
-Java. All other requirements are self-contained in the GroovySQL jar file. In particular there is no requirement to
-install Groovy or any database drivers, GroovySQL will locate all those artifacts in its jar file at runtime. The jar
-file is not extracted or installed anywhere. Recommendation is to copy both files to `/usr/local/bin`, provided it is in
-the execution path (`$PATH`). The groovysql jar contains the Denodo, Snowflake, Postgres, MySQL, and SQLite database 
-drivers.
+Java (v17 recommended/tested). All other requirements are self-contained in the GroovySQL jar file. In particular there
+is no requirement to install Groovy or any database drivers, GroovySQL will locate all those artifacts in its jar file
+at runtime. The jar file is not extracted or installed anywhere. Recommendation is to copy both files to
+`/usr/local/bin`, provided it is in the execution path (`$PATH`). The groovysql jar contains the Denodo, Snowflake,
+Postgres, MySQL, and SQLite database drivers as well as Groovy itself.
 
 ## Building GroovySQL
 
@@ -72,12 +72,12 @@ output while industry standard packages (insuring standards compliance) handle o
 output formats.
 
 The `--jsonstyle` option, used with json mode, allows selecting between all keys and values being quoted (the default)
-or all keys and string values being quoted (with numeric values unquoted) as JSON allows both approaches.
+or all keys and string values being quoted (with numeric and null values unquoted) as JSON allows both approaches.
 
 GroovySQL supports various JSON styles - "quoted", "standard", and "spread". The default is _quoted_ and results in all
-values being quoted while _standard_ does not quote integer and floating point numeric values. The _spread_ style is a
-variant of standard that uses the Groovy spread operator to produce the same output as _standard_. JSON keys are always
-quoted in compliance with JSON standards.
+values being quoted while _standard_ does not quote integer and floating point numeric values or nulls. The _spread_
+style is a variant of standard that uses the Groovy spread operator to produce the same output as _standard_. JSON keys
+are always quoted in compliance with JSON standards.
 
 GroovySQL is designed for use in production batch operations and is careful to avoid overwriting any existing files and
 will abort in the event of a conflict unless the _append_ option is in effect in which case it will append the output to
@@ -132,7 +132,7 @@ Currently supported authentication stores are:
     Azure KeyVault ................ azure:key-vault-name:key
     Google Secret Manager ......... gcp:secret-name
     AWS Secrets Manager ........... aws:secret-id
-    KeyPair ....................... keypair:~/.keys/rsa-key.p8
+    KeyPair ....................... keypair:~/.keys/rsa-key.p8:passphrase
 
 ### `-c|--config <arg>`
 
@@ -232,8 +232,8 @@ directive (see [Directives](#directives)).
 
 ## Schemes
 
-GroovySQL uses a URL of `jdbc:<scheme>://<node>/<database>` to connect to the database. Schemes currently supported by
-GroovySQL are:
+GroovySQL uses a URL of `jdbc:<scheme>://<node>/<database>` to connect to the database. Schemes, sometimes referred to
+as subprotocols, currently supported by GroovySQL are:
 
     vdb
     denodo
@@ -323,10 +323,8 @@ as follows:
      azure:key-vault-name:key
      gcp:secret-name
      aws:secret-id
-     keypair:<private-key-file-name>
-
-A common use case is to use a Config file with dbScheme, dbHost, dbName, and dbOptions specified and leverage the
-`--authentication` option to handle the authentication aspect.
+     keypair:<private-key-file-name>:<passphrase>     # encrypted private key
+     keypair:<private-key-file-name>                  # unencrypted private key
 
 When using simple user/password or authentication passphrases, the use of Config files keeps passwords and passphrases
 off of system monitors and is recommended.
@@ -367,13 +365,13 @@ File: itemdb.config
 
 Specifying the dbClass in the config file is optional. GroovySQL uses a default dbClass based on the dbScheme but if a
 dbClass is provided then it will override the default. The dbOptions values are concatenated together with
-ampersands (&) and included in the JDBC URL generated to connect to the database. The opt1/opt2/opt3 identifiers serve
-to avoid key duplication and control ordering (in case that was important). Any identifiers could be used instead, e.g.
-a/b/c.
+ampersands (&) and appended to the generated JDBC URL as parameters to connect to the database. The opt1/opt2/opt3
+identifiers serve to avoid key duplication and control ordering (in case that was important). Any identifiers could be
+used instead, e.g. a/b/c instead of opt1/opt2/opt3.
 
 This example generates a connection JDBC URL of:
 
-    jdbc:denodo://dbhost.mydomain.com:9999/itemdb&queryTimeout=1500&chunkTimeout=10&chunkSize=500
+    jdbc:denodo://dbhost.mydomain.com:9999/itemdb?queryTimeout=1500&chunkTimeout=10&chunkSize=500
 
 File: item-extract.sql
 
